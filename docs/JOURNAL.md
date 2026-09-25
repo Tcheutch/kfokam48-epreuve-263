@@ -80,11 +80,62 @@ où l'auteur est le seul présent, donc sans relecteur possible (H3).
 
 ## Étape 2 — Première version
 
-**Fait :**
+**Fait :** les sept exigences **Must** (EF1 à EF7), plus EF12 arrivée en bonus
+parce que le formateur avait besoin de retrouver une séance pour la clôturer.
+Une branche et une pull request par issue, le commit de fusion fermant l'issue.
+Backend Spring Boot 3 / Java 17 avec `mvnw` committé, schéma Flyway V1 conforme à
+D2, gestion centralisée des erreurs, 76 tests au vert dont six classes
+d'intégration qui tournent sans base de données locale. Frontend React + Vite,
+les trois écrans de F2, tous les appels réseau dans une seule couche.
+`docker compose up` démarre l'ensemble avec les données de démonstration.
 
 **Bloqué :**
 
-**IA :**
+- **~10 min, et le plus dangereux : mes tests d'intégration ne tournaient pas.**
+  Surefire n'exécute pas les classes `*IT.java` — elles reviennent à Failsafe,
+  lié à `verify` et non à `test`. `./mvnw test` affichait donc un vert parfait
+  en ignorant **en silence** le seul test qui vérifiait la conformité au
+  contrat. Repéré en comptant les classes exécutées dans la sortie, pas en
+  lisant « BUILD SUCCESS ». Corrigé par une configuration explicite des
+  `includes`. Leçon retenue pour le reste de la journée : un build vert ne dit
+  pas *ce qui* a tourné.
+- **~15 min sur un trou que l'analyse n'avait pas vu (H12).** Le corps imposé de
+  `POST /api/relectures/{id}` est `{ note, commentaire }` — sans identité de
+  l'appelant. Or le contrat exige un `403 AUTO_RELECTURE`, qui devient
+  inatteignable, d'autant que le tirage interdit déjà d'assigner l'auteur.
+  Tranché : un champ **facultatif** `relecteurId`, l'ensemble `required` du
+  contrat restant inchangé. Ajouté en section 7 ; le cahier des charges bouge
+  quand la réalité le contredit.
+- **~5 min, deux fichiers ignorés en silence.** Mon fichier de données de
+  démonstration s'appelait `D1__donnees.sql` : le préfixe Flyway par défaut est
+  `V`, il n'a jamais été joué. Et `tsconfig.tsbuildinfo`, régénéré à chaque
+  build, était suivi par Git. Deux erreurs sans message d'erreur, ce qui est la
+  pire espèce.
+
+**IA :** je lui ai demandé la traduction du cahier des charges en code —
+entités, services, contrôleurs, tests — exigence par exigence, une branche à la
+fois.
+
+Comment j'ai vérifié :
+
+1. **La conformité au contrat, par un test et non par relecture.** Chaque
+   opération imposée a son test d'intégration qui assert sur le code HTTP **et**
+   sur le champ `code` du corps d'erreur. Le piège que je surveillais est celui
+   que l'IA tombe naturellement : « corriger » `400 CODE_INCONNU` en `404`,
+   parce que c'est le réflexe REST normal. Le test l'interdit.
+2. **J'ai compté les tests exécutés**, pas seulement lu « BUILD SUCCESS ».
+   C'est ce qui a révélé le problème Surefire.
+3. **J'ai relu chaque règle de gestion contre son test.** Les tests portent le
+   nom de la règle (`rg2_codeExpireApresQuinzeMinutes`), donc l'absence se voit.
+   Deux cas que l'IA n'avait pas couverts spontanément et que j'ai ajoutés :
+   la quinzième minute **pile** (borne incluse ou exclue ?) et l'ordre des
+   vérifications quand une séance est à la fois clôturée et expirée.
+4. **J'ai fait tourner `docker compose` depuis un clone vierge**, pas seulement
+   depuis mon dossier de travail, pour que le README dise la vérité.
+
+Ce que j'ai refusé de ce qu'elle proposait : arrondir une note décimale au lieu
+de la rejeter. Q9 dit « en nombres entiers » — arrondir, c'est inventer une
+règle que le client n'a pas donnée.
 
 ---
 
