@@ -23,6 +23,22 @@ spring:
     # db/migration, pour partir d'une base vide.
     locations: classpath:db/migration,classpath:db/demo
 
+    # Les migrations de SCHÉMA sont numérotées V1, V2, V3… ; celles de DONNÉES
+    # DE DÉMONSTRATION vivent à part, à partir de V900, pour qu'on les
+    # distingue d'un coup d'œil et qu'elles ne s'intercalent jamais.
+    #
+    # Conséquence, découverte en appliquant V2 sur une base déjà remplie :
+    # V900 et V901 y étaient déjà posées, donc V2 arrivait « dans le passé » et
+    # Flyway refusait de l'appliquer. Sur une base vierge, l'ordre V1, V2, V900,
+    # V901 est naturel et le problème n'existe pas — il ne se manifeste QUE sur
+    # une base existante, c'est-à-dire précisément le cas qui compte.
+    #
+    # Le compromis est assumé : out-of-order affaiblit la garantie d'ordre
+    # total, mais les deux familles de migrations ne se touchent pas — l'une
+    # crée des structures, l'autre insère des lignes de démonstration. Renuméroter
+    # V900 et V901 était exclu : elles sont déjà appliquées.
+    out-of-order: true
+
   jackson:
     serialization:
       write-dates-as-timestamps: false
