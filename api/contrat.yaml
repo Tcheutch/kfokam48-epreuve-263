@@ -663,11 +663,12 @@ components:
         | NOTE_INVALIDE            | 400 | Note non entière ou hors 0..20 (RG9) |
         | AUTO_RELECTURE           | 403 | Un étudiant ne relit pas son propre exercice (RG5) |
         | RELECTURE_DEJA_RENDUE    | 409 | Note figée par la clôture (RG10) ou lien non remplaçable (RG13) |
-        | PROMOTION_INCONNUE       | 404 | Promotion introuvable |
+        | PROMOTION_INCONNUE       | 404 | Promotion introuvable — mais **400** sur POST /api/sessions, seul statut d'erreur que le contrat imposé y prévoit |
         | SESSION_INCONNUE         | 404 | Session introuvable |
         | ETUDIANT_INCONNU         | 404 | Utilisateur introuvable |
         | EXERCICE_INCONNU         | 404 | Exercice introuvable |
         | RELECTURE_INCONNUE       | 404 | Relecture introuvable |
+        | RESSOURCE_INCONNUE       | 404 | Adresse inexistante — le 404 imprévu sort au même format (ENF4) |
         | ERREUR_INTERNE           | 500 | Filet de sécurité du @RestControllerAdvice (ENF4) |
       content:
         application/json:

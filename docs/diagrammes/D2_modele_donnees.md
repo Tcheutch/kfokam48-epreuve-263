@@ -79,7 +79,7 @@ erDiagram
 | `relecture` | `UNIQUE (exercice_id)` | RG6 | — |
 | `relecture` | `CHECK (note IS NULL OR note BETWEEN 0 AND 20)` | RG9 | `400 NOTE_INVALIDE` |
 | `relecture` | `CHECK (relecteur_id <> exercice.etudiant_id)` — vérifié en service | RG5 | `403 AUTO_RELECTURE` |
-| `session` | `UNIQUE (code)` sur les sessions non clôturées | RG21 | — |
+| `session` | `UNIQUE (code)` **global** — et non restreint aux sessions actives comme envisagé ici au départ : un index partiel n'est pas portable sur H2, où tournent les tests. Une unicité globale est plus forte, donc toujours suffisante pour RG21 | RG21 | — |
 | `presence` / `exercice` | `source` et `statut` stockés en `VARCHAR` + `CHECK`, pas en `ENUM` natif | portabilité H2 / PostgreSQL | — |
 
 ## Choix de modélisation
