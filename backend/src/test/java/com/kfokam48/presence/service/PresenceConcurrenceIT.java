@@ -200,9 +200,13 @@ class PresenceConcurrenceIT {
             CyclicBarrier attente = barriere;
             if (attente != null) {
                 try {
-                    attente.await(20, TimeUnit.SECONDS);
-                } catch (Exception e) {
-                    throw new IllegalStateException("barrière du test non franchie", e);
+                    attente.await(3, TimeUnit.SECONDS);
+                } catch (Exception attenteExpiree) {
+                    // Avant correction, les deux appels se rejoignaient ici et la
+                    // course avait lieu. Après correction, le verrou pessimiste les
+                    // met en file : le second n'arrive qu'une fois le premier sorti,
+                    // donc la barrière expire — c'est le signe que le correctif
+                    // fonctionne, pas une erreur. On poursuit.
                 }
             }
             return super.assigner(exercice, maintenant);

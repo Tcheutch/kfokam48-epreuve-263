@@ -1,9 +1,11 @@
 package com.kfokam48.presence.service;
 
 import com.kfokam48.presence.depot.ExerciceRepository;
+import com.kfokam48.presence.domaine.Exercice;
 import com.kfokam48.presence.domaine.StatutExercice;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,8 +48,19 @@ public class RejeuDesTirages {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void rejouerPour(Long sessionId) {
         Instant maintenant = Instant.now(horloge);
-        exercices.findBySessionIdAndStatut(sessionId, StatutExercice.DEPOSE)
-                .forEach(exercice -> tirageRelecteur.assigner(exercice, maintenant));
+
+        List<Long> candidats = exercices.findBySessionIdAndStatut(sessionId, StatutExercice.DEPOSE).stream()
+                .map(Exercice::getId)
+                .toList();
+
+        for (Long exerciceId : candidats) {
+            // Issue #22 — on reprend la ligne SOUS VERROU, et on revérifie son
+            // statut : entre la lecture ci-dessus et maintenant, un autre
+            // rattrapage concurrent a pu lui trouver un relecteur.
+            exercices.verrouillerPourTirage(exerciceId)
+                    .filter(exercice -> exercice.getStatut() == StatutExercice.DEPOSE)
+                    .ifPresent(exercice -> tirageRelecteur.assigner(exercice, maintenant));
+        }
     }
 
     /**
