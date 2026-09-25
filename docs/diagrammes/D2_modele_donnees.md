@@ -4,6 +4,11 @@ Ce diagramme fait foi pour les migrations Flyway (`backend/src/main/resources/db
 Toute évolution du schéma se fait par **une nouvelle migration** et une mise à jour
 de ce diagramme dans le même commit (contrainte B5).
 
+> **Étape 3 — ce diagramme a changé.** Le client a révoqué Q6 : un exercice est
+> désormais relu par **deux** pairs distincts. Les éléments barrés ci-dessous
+> sont ce qui était vrai au jalon `v0.1` ; ils sont conservés pour que
+> l'historique reste lisible.
+
 ```mermaid
 erDiagram
     PROMOTION {
@@ -36,7 +41,7 @@ erDiagram
     EXERCICE {
         Long id PK
         String lien "URL http(s) absolue (RG18)"
-        String statut "DEPOSE | EN_ATTENTE | RELU (voir D4)"
+        String statut "DEPOSE | EN_ATTENTE | PARTIELLEMENT_RELU | RELU (voir D4)"
         DateTime depose_at
         Long session_id FK
         Long etudiant_id FK
@@ -65,7 +70,7 @@ erDiagram
     UTILISATEUR ||--o{ PRESENCE   : "est marqué présent"
     SESSION    ||--o{ EXERCICE    : "reçoit"
     UTILISATEUR ||--o{ EXERCICE   : "dépose"
-    EXERCICE   ||--o| RELECTURE   : "fait l'objet d'au plus une (RG6)"
+    EXERCICE   ||--o{ RELECTURE   : "est relu par deux pairs distincts (RG6 étape 3, RG24)"
     UTILISATEUR ||--o{ RELECTURE  : "relit"
     UTILISATEUR ||--o| TENTATIVE_CODE : "cumule ses échecs"
 ```
@@ -76,7 +81,8 @@ erDiagram
 |---|---|---|---|
 | `presence` | `UNIQUE (session_id, etudiant_id)` | RG15 | `409 DEJA_PRESENT` |
 | `exercice` | `UNIQUE (session_id, etudiant_id)` | RG16 | `409 EXERCICE_DEJA_DEPOSE` |
-| `relecture` | `UNIQUE (exercice_id)` | RG6 | — |
+| `relecture` | ~~`UNIQUE (exercice_id)`~~ **retirée en V2** — elle matérialisait « un seul relecteur » | ~~RG6 (Q6)~~ périmée | — |
+| `relecture` | `UNIQUE (exercice_id, relecteur_id)` **ajoutée en V2** — deux relecteurs *distincts* | RG24 | `409 CONFLIT_CONCURRENT` |
 | `relecture` | `CHECK (note IS NULL OR note BETWEEN 0 AND 20)` | RG9 | `400 NOTE_INVALIDE` |
 | `relecture` | `CHECK (relecteur_id <> exercice.etudiant_id)` — vérifié en service | RG5 | `403 AUTO_RELECTURE` |
 | `session` | `UNIQUE (code)` **global** — et non restreint aux sessions actives comme envisagé ici au départ : un index partiel n'est pas portable sur H2, où tournent les tests. Une unicité globale est plus forte, donc toujours suffisante pour RG21 | RG21 | — |
@@ -95,4 +101,13 @@ erDiagram
   deux minutes (RG4, Q4) doit survivre à un redémarrage, sinon la règle se
   contourne trivialement.
 - **`moyenne` n'est stockée nulle part** : elle est recalculée par l'API à la
-  lecture du tableau (RG19, contrainte F3).
+  lecture du tableau (RG19, contrainte F3). Depuis l'étape 3, c'est une
+  **moyenne de moyennes** — note d'exercice d'abord, moyenne de l'étudiant
+  ensuite (H13). Ne rien stocker évite d'avoir à réécrire des notes existantes
+  quand la règle de calcul change, ce qui vient précisément d'arriver.
+- **La cardinalité `exercice → relecture` passe de 0..1 à 0..2** (étape 3).
+  Le changement se fait par une migration **V2 ajoutée**, jamais en modifiant
+  `V1__schema_initial.sql` : retrait de `UNIQUE (exercice_id)`, ajout de
+  `UNIQUE (exercice_id, relecteur_id)`. Les lignes existantes — un relecteur
+  par exercice — restent valides sous la nouvelle contrainte, et aucune
+  seconde relecture ne leur est inventée (H14).

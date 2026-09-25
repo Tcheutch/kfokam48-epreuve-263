@@ -46,6 +46,14 @@ Démarrer avant tout :
 docker compose up --build
 ```
 
+> **Étape 3.** Le client a révoqué Q6 : chaque exercice est désormais relu par
+> deux pairs et la note est la moyenne des deux, provisoire tant qu'une seule
+> relecture est rendue. **L'analyse, le contrat et les diagrammes sont à jour ;
+> le comportement du backend ne l'est pas encore** — le tirage assigne toujours
+> un seul relecteur. Les commandes ci-dessous décrivent donc ce que
+> l'application fait aujourd'hui, pas ce que le contrat décrira demain. C'est
+> dit plutôt que caché.
+
 ## Le jeu de démonstration
 
 | Séance | `id` | Code | État | Ce qu'elle permet de montrer |
@@ -147,9 +155,12 @@ curl -i -X POST localhost:8080/api/relectures/3001 \
 > Pour repartir à neuf : `docker compose down && docker compose up --build`.
 
 **`400 TROP_DE_TENTATIVES`** — RG4 (cinq codes erronés, deux minutes de
-blocage) relève d'**EF10, priorité Should**. Elle n'est pas livrée au jalon
-`v0.1` ; elle arrive à l'étape 4. Le code d'erreur est déjà au contrat et au
-catalogue, l'endpoint ne le renvoie pas encore. Annoncé plutôt que promis.
+blocage) relève d'**EF10**, qui est **sortie du périmètre à l'étape 3** pour
+absorber le passage à deux relecteurs. La justification est en section 3 du
+cahier des charges : Q4 exprime une crainte du client, pas un usage, et RG21
+rend déjà la devinette peu praticable. Le code d'erreur reste au contrat et au
+catalogue — c'est une exigence **reportée, pas abandonnée**. L'endpoint ne le
+renvoie pas. Annoncé plutôt que promis.
 
 **`500 ERREUR_INTERNE`** — c'est le filet de sécurité du
 `@RestControllerAdvice` : il ne se déclenche que sur une erreur imprévue, donc
