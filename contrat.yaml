@@ -279,7 +279,7 @@ paths:
               example: { id: 31, statut: "EN_ATTENTE" }
         "400":
           $ref: "#/components/responses/Erreur"
-          # LIEN_INVALIDE · CHAMP_MANQUANT
+          # LIEN_INVALIDE · CHAMP_MANQUANT · SESSION_INCONNUE · ETUDIANT_INCONNU
         "409":
           $ref: "#/components/responses/Erreur"
           # EXERCICE_DEJA_DEPOSE · SESSION_CLOTUREE

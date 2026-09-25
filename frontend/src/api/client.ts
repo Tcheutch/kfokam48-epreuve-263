@@ -1,4 +1,4 @@
-import type { Presence, Promotion, SessionCreee, Utilisateur } from './types'
+import type { Exercice, ExerciceDepose, Presence, Promotion, SessionCreee, Utilisateur } from './types'
 
 /**
  * Couche d'accès à l'API — le SEUL endroit du frontend qui connaisse `fetch`
@@ -71,5 +71,19 @@ export const api = {
     appeler<Presence>('/presences', {
       method: 'POST',
       body: JSON.stringify({ code, etudiantId }),
+    }),
+
+  /** EF3 — l'étudiant dépose le lien de son exercice. */
+  deposerExercice: (sessionId: number, etudiantId: number, lien: string) =>
+    appeler<ExerciceDepose>('/exercices', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId, etudiantId, lien }),
+    }),
+
+  /** RG13 — remplacer le lien, tant que la relecture n'est pas rendue. */
+  remplacerLien: (exerciceId: number, lien: string) =>
+    appeler<Exercice>(`/exercices/${exerciceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ lien }),
     }),
 }

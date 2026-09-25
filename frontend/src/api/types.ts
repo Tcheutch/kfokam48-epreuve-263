@@ -55,3 +55,17 @@ export interface LigneTableau {
   moyenne: number | null
   relecturesEnAttente: number
 }
+
+export interface ExerciceDepose {
+  id: number
+  statut: StatutExercice
+}
+
+export interface Exercice {
+  id: number
+  sessionId: number
+  etudiantId: number
+  lien: string
+  statut: StatutExercice
+  deposeAt: string
+}
