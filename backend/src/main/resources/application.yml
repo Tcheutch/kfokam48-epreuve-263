@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: presence-relecture
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/kfokam48}
+    username: ${SPRING_DATASOURCE_USERNAME:kfokam48}
+    password: ${SPRING_DATASOURCE_PASSWORD:kfokam48}
+
+  jpa:
+    hibernate:
+      # Contrainte B5 : le schéma vient des migrations, jamais d'Hibernate.
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    # db/demo porte le jeu de démonstration (ENF6). Les tests ne chargent que
+    # db/migration, pour partir d'une base vide.
+    locations: classpath:db/migration,classpath:db/demo
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: always
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+
+logging:
+  level:
+    com.kfokam48.presence: INFO
