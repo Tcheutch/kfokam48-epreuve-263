@@ -38,6 +38,7 @@ public class ExerciceService {
     private final UtilisateurRepository utilisateurs;
     private final RelectureRepository relectures;
     private final ValidateurLien validateurLien;
+    private final TirageRelecteur tirageRelecteur;
     private final Clock horloge;
 
     public ExerciceService(
@@ -46,12 +47,14 @@ public class ExerciceService {
             UtilisateurRepository utilisateurs,
             RelectureRepository relectures,
             ValidateurLien validateurLien,
+            TirageRelecteur tirageRelecteur,
             Clock horloge) {
         this.exercices = exercices;
         this.sessions = sessions;
         this.utilisateurs = utilisateurs;
         this.relectures = relectures;
         this.validateurLien = validateurLien;
+        this.tirageRelecteur = tirageRelecteur;
         this.horloge = horloge;
     }
 
@@ -85,7 +88,13 @@ public class ExerciceService {
             throw new ErreurMetier(CodeErreur.EXERCICE_DEJA_DEPOSE);
         }
 
-        return exercices.save(new Exercice(session, etudiant, lienValide, Instant.now(horloge)));
+        Instant maintenant = Instant.now(horloge);
+        Exercice exercice = exercices.save(new Exercice(session, etudiant, lienValide, maintenant));
+
+        // EF4 — le tirage suit immédiatement le dépôt. S'il n'aboutit pas,
+        // l'exercice reste au statut DEPOSE : ce n'est pas une erreur (RG22).
+        tirageRelecteur.assigner(exercice, maintenant);
+        return exercice;
     }
 
     /**
