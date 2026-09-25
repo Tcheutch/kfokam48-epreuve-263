@@ -49,12 +49,11 @@ export function SelecteurEtudiant({
   if (!promotions) return <Chargement quoi="des promotions" />
 
   return (
-    <fieldset>
+    <fieldset className="carte">
       <legend>Qui es-tu ?</legend>
 
-      <p>
+      <div className="champ">
         <label htmlFor="promotion-etudiant">Promotion</label>
-        <br />
         <select
           id="promotion-etudiant"
           value={promotionId}
@@ -66,19 +65,14 @@ export function SelecteurEtudiant({
             </option>
           ))}
         </select>
-      </p>
+      </div>
 
-      <p>
+      <div className="champ">
         <label htmlFor="etudiant">Ton nom</label>
-        <br />
         {etudiants === null ? (
           <Chargement quoi="de la liste" />
         ) : (
-          <select
-            id="etudiant"
-            value={etudiantId}
-            onChange={(e) => onChange(Number(e.target.value))}
-          >
+          <select id="etudiant" value={etudiantId} onChange={(e) => onChange(Number(e.target.value))}>
             {etudiants.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.nom}
@@ -86,7 +80,7 @@ export function SelecteurEtudiant({
             ))}
           </select>
         )}
-      </p>
+      </div>
     </fieldset>
   )
 }
