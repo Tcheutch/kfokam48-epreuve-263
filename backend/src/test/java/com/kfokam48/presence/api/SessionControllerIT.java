@@ -32,6 +32,7 @@ class SessionControllerIT {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private PromotionRepository promotions;
+    @Autowired private com.kfokam48.presence.erreur.GestionnaireErreurs gestionnaireErreurs;
 
     private Long promotionId;
 
@@ -72,6 +73,19 @@ class SessionControllerIT {
                         .content("{\"titre\":\"Spring Boot\",\"promotionId\":999999}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("PROMOTION_INCONNUE"));
+    }
+
+    @Test
+    @DisplayName("#22 / ENF4 — une violation d'intégrité concurrente sort en 409, jamais en 500")
+    void violationDIntegriteSortEn409EtNonEn500() {
+        var reponse = gestionnaireErreurs.conflitConcurrent(
+                new org.springframework.dao.DataIntegrityViolationException("uk_presence_session_etudiant"),
+                new org.springframework.mock.web.MockHttpServletRequest("POST", "/api/presences"));
+
+        org.assertj.core.api.Assertions.assertThat(reponse.getStatusCode().value()).isEqualTo(409);
+        org.assertj.core.api.Assertions.assertThat(reponse.getBody()).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(reponse.getBody().code()).isEqualTo("CONFLIT_CONCURRENT");
+        org.assertj.core.api.Assertions.assertThat(reponse.getBody().message()).isNotBlank();
     }
 
     @Test

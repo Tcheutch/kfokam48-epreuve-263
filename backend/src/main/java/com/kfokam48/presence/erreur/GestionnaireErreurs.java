@@ -3,6 +3,7 @@ package com.kfokam48.presence.erreur;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -42,6 +43,23 @@ public class GestionnaireErreurs {
     public ResponseEntity<ReponseErreur> requeteMalFormee(Exception e) {
         log.debug("Requête mal formée : {}", e.getMessage());
         return ResponseEntity.badRequest().body(ReponseErreur.de(CodeErreur.CHAMP_MANQUANT));
+    }
+
+    /**
+     * Issue #22 — une contrainte d'unicité violée par une opération concurrente.
+     *
+     * <p>Deux requêtes identiques qui se croisent — le même étudiant marquant sa
+     * présence deux fois en même temps — passent toutes deux la vérification
+     * applicative, et c'est la base qui tranche. Le résultat est un conflit
+     * métier ordinaire, pas une panne : il n'a rien à faire dans un
+     * {@code 500}, que ENF4 interdit de toute façon de laisser sortir brut.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ReponseErreur> conflitConcurrent(
+            DataIntegrityViolationException e, HttpServletRequest requete) {
+        log.warn("Conflit d'intégrité sur {} {} : {}", requete.getMethod(), requete.getRequestURI(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ReponseErreur.de(CodeErreur.CONFLIT_CONCURRENT));
     }
 
     /** Une adresse inconnue est une erreur comme une autre : elle sort au même format. */

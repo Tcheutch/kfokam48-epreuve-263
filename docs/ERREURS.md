@@ -116,6 +116,7 @@ Chaque commande renvoie le statut indiqué **et** un corps `{ code, message }`.
 | `EXERCICE_INCONNU` | 404 | ```curl -i -X PUT localhost:8080/api/exercices/999999 -H 'Content-Type: application/json' -d '{"lien":"https://exemple.com/x"}'``` |
 | `SESSION_INCONNUE` | 404 | ```curl -i -X POST localhost:8080/api/sessions/999999/cloture``` |
 | `PROMOTION_INCONNUE` | **404** | ```curl -i 'localhost:8080/api/tableau?promotionId=999'``` — 404 ici, le contrat l'y autorise |
+| `CONFLIT_CONCURRENT` | **409** | Deux requêtes identiques qui se croisent — le même étudiant marquant sa présence deux fois au même instant. La base tranche là où la vérification applicative a laissé passer les deux. Se provoque en lançant deux fois la même commande en parallèle : ```curl -s -X POST localhost:8080/api/presences -H 'Content-Type: application/json' -d '{"code":"DEMO01","etudiantId":13}' & curl -s -X POST localhost:8080/api/presences -H 'Content-Type: application/json' -d '{"code":"DEMO01","etudiantId":13}' & wait``` — l'une des deux renvoie `DEJA_PRESENT` ou `CONFLIT_CONCURRENT` selon laquelle gagne la course. **Jamais un 500** (issue #22, ENF4) |
 | `RESSOURCE_INCONNUE` | 404 | ```curl -i localhost:8080/api/nexiste-pas``` — même un 404 imprévu sort au format imposé (ENF4) |
 
 ### Les deux cas qui demandent une mise en scène

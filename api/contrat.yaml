@@ -676,6 +676,7 @@ components:
         | ETUDIANT_INCONNU         | 404 | Utilisateur introuvable — mais **400** sur POST /api/presences, où le contrat imposé n'autorise que 400, 409 et 410 |
         | EXERCICE_INCONNU         | 404 | Exercice introuvable |
         | RELECTURE_INCONNUE       | 404 | Relecture introuvable |
+        | CONFLIT_CONCURRENT       | 409 | Contrainte d'unicité violée par une requête concurrente (issue #22) |
         | RESSOURCE_INCONNUE       | 404 | Adresse inexistante — le 404 imprévu sort au même format (ENF4) |
         | ERREUR_INTERNE           | 500 | Filet de sécurité du @RestControllerAdvice (ENF4) |
       content:
