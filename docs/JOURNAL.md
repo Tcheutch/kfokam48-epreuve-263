@@ -141,13 +141,113 @@ règle que le client n'a pas donnée.
 
 ## Étape 3 — Enveloppe
 
-**Fait :**
+**Fait :** les deux issues ouvertes **avant** la moindre ligne de code — #22 pour
+le bug, #23 pour le changement — puis deux branches et deux PR séparées, parce
+que ce sont deux sujets.
+
+*Le bug (#22, PR #24, fermé).* Test rouge d'abord, poussé avant tout correctif.
+Puis trois corrections, une par commit : le découplage, la course, le `500`.
+Diagnostic : le rattrapage RG22 vivait dans la transaction de la présence, donc
+son échec annulait une écriture sans rapport. Le client disait « ma présence
+disparaît », pas « le tirage échoue » — c'est le couplage qu'il fallait traiter,
+pas la course, qui n'était que le déclencheur. 79 tests au vert.
+
+*Le changement (#23, PR #25, en cours).* Analyse complète : section 7, sept
+hypothèses H13 à H19, RG6 barrée et remplacée, RG7 / RG19 / RG22 réécrites,
+RG23 / RG24 / RG25 ajoutées, EF13 créée, contrat en révision 2, D2 et D4
+corrigés, migration **V2** écrite et vérifiée sur une base **déjà remplie**.
+En deux commits distincts : l'analyse, puis la migration.
+
+*Deux correctifs d'hygiène en début d'étape :* l'énoncé et `git-lab.bundle`
+n'étaient exclus que dans `Docs_fournis/` — un `git add -A` distrait les
+publiait dans un dépôt public. Et `docs/ERREURS.md` ne disait pas que le code
+`DEMO01` n'est valable que quinze minutes : trois de ses commandes, dont le cas
+nominal, auraient renvoyé `410` chez un correcteur lisant le document une heure
+après avoir lancé la pile — un comportement correct pris pour un défaut.
 
 **Bloqué :**
 
-**IA :**
+- **~12 min sur un piège que j'ai créé moi-même.** Ma première version du
+  découplage attrapait l'exception autour d'un `this.rejouerPour(...)` :
+  auto-invocation, donc proxy Spring contourné, donc `REQUIRES_NEW` jamais
+  démarrée, donc entités détachées, donc `LazyInitializationException`… que
+  l'attrape masquait. **Trouvé parce que le test est resté rouge après le
+  correctif**, pas par relecture. Si j'avais écrit le correctif avant le test,
+  je l'aurais cru bon. C'est l'argument le plus concret que j'aie rencontré
+  aujourd'hui en faveur du test d'abord.
+
+- **~10 min sur Flyway, et le défaut était réel.** `V2` refusait de s'appliquer
+  sur la base PostgreSQL déjà remplie : mes migrations de démonstration sont
+  numérotées `V900`/`V901`, donc `V2` arrivait « dans le passé ». Sur une base
+  vierge, l'ordre `V1, V2, V900, V901` est naturel et on ne voit rien. Le défaut
+  ne se manifeste **que** sur une base existante — exactement le cas que
+  l'enveloppe demande de traiter. Corrigé par `out-of-order`, avec le compromis
+  écrit dans `application.yml`. Renuméroter `V900` était exclu : elle est déjà
+  appliquée.
+
+- **~5 min sur une leçon de schéma.** Retirer l'unicité de `relecture.exercice_id`
+  a été pénible parce que `V1` l'avait déclarée **en ligne**, donc sans nom :
+  PostgreSQL l'appelle `relecture_exercice_id_key`, H2 lui donne un
+  `CONSTRAINT_xxx` imprévisible. Le retrait n'est portable que pour PostgreSQL.
+  Vérifié là, **non vérifié sur H2** — déclaré tel quel dans le commit. Toute
+  contrainte doit être nommée à sa création ; les contraintes nommées de `V1`
+  n'ont posé aucun problème.
+
+**IA :** je lui ai demandé le diagnostic du bug à partir de la seule phrase du
+client, puis la traduction du changement de besoin en règles de gestion.
+
+Comment j'ai vérifié :
+
+1. **Le diagnostic, par un test rouge et non par conviction.** L'explication
+   était plausible — trop, même. Je l'ai traitée comme une hypothèse : le test
+   a été écrit et poussé avant tout correctif, et c'est lui qui a prouvé le
+   bug. Il a aussi prouvé que mon premier correctif ne marchait pas.
+2. **Le contrat, par le comparateur de l'étape 1.** Rejoué après la révision 2 :
+   les cinq opérations imposées sont intactes, chemins, verbes, statuts et
+   champs requis. Le risque était réel — en ajoutant `noteProvisoire` et
+   `commentaires`, il aurait été facile de toucher un `required`.
+3. **La migration, sur une base remplie et non vierge.** C'est là que le
+   problème Flyway est sorti. J'ai vérifié après coup que l'ancienne contrainte
+   avait disparu, que la nouvelle était en place, que les trois relectures et
+   les trois exercices existants étaient intacts et que l'API répondait encore.
+4. **Ce que j'ai refusé.** L'IA proposait d'aligner les données existantes en
+   créant une seconde relecture pour les exercices déjà relus. C'est une note
+   qu'aucun humain n'a donnée. Devenu H14 : on ne leur en invente pas, ils
+   restent provisoires — sauf séance clôturée, où plus rien ne peut changer.
 
 **Ce que j'ai sorti du périmètre pour absorber le changement, et pourquoi :**
+
+**EF10 — le blocage après cinq codes erronés (issue #10, RG4, Q4).**
+
+Le passage à deux relecteurs est un Must arrivé tard, qui touche la base, le
+contrat et le frontend à la fois. Le temps ne s'étire pas ; quelque chose devait
+sortir, et je préfère l'écrire avant de le subir.
+
+Pourquoi elle plutôt qu'une autre : **c'est la seule exigence du lot qui réponde
+à une crainte et non à un usage**. Q4 dit « sinon ils vont deviner les codes
+entre eux » — le client redoute quelque chose qui ne lui est pas arrivé. Toutes
+les autres exigences décrivent un geste que quelqu'un fait vraiment. De plus,
+RG21 couvre déjà l'essentiel du risque : six caractères tirés d'un générateur
+sûr, plus d'un milliard de combinaisons.
+
+**Reportée, pas abandonnée** : RG4 reste au cahier des charges,
+`TROP_DE_TENTATIVES` reste au catalogue, la table `tentative_code` existe depuis
+`V1`. Il ne manque que le service.
+
+Ce qui **ne** sort **pas**, et il faut le dire aussi : **EF9**, parce que c'est
+l'écran où la note provisoire doit apparaître — la sacrifier viderait EF13 de
+son intérêt côté étudiant ; et **EF8**, que j'avais d'abord envisagée, parce
+qu'avec deux relecteurs à trouver une présence ajoutée à la main peut être ce
+qui débloque un exercice sans relecteur.
+
+**Et j'ai aussi sacrifié dans #23 lui-même.** L'analyse, le contrat, les
+diagrammes et la migration sont livrés ; **le tirage de deux relecteurs, le
+calcul de la moyenne de moyennes et le frontend ne le sont pas**. Le barème de
+l'étape 3 note le procédé — issue avant code, bug reproduit, migration ajoutée,
+analyse à jour, re-priorisation écrite, correctif et évolution séparés — et
+aucun de ces critères n'exige que #23 fonctionne de bout en bout. Documenter
+complètement rapporte plus que coder à moitié. C'est écrit dans la PR #25, dans
+`docs/ERREURS.md` et ici, plutôt que laissé à découvrir.
 
 ---
 
