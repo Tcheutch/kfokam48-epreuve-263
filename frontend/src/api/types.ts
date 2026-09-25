@@ -69,3 +69,17 @@ export interface Exercice {
   statut: StatutExercice
   deposeAt: string
 }
+
+export interface RelectureAFaire {
+  id: number
+  exerciceId: number
+  sessionTitre: string
+  lien: string
+  /** H8 — l'anonymat est simple : le relecteur voit l'auteur, pas l'inverse. */
+  auteurNom: string
+  statut: StatutRelecture
+  note: number | null
+  commentaire: string | null
+  /** RG10 — vrai tant que la session n'est pas clôturée. */
+  modifiable: boolean
+}

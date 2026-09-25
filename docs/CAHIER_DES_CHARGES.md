@@ -158,6 +158,7 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | **H8 — L'anonymat du relecteur est-il réciproque ?** | Q8 ne protège que l'auteur : « pas le nom du relecteur ». Rien n'est dit sur ce que voit le relecteur. | **Anonymat simple, pas double** : le relecteur voit le nom de l'auteur (il est de toute façon souvent lisible dans le lien vers le dépôt). Seule l'identité du relecteur est masquée (RG8). | Décision inverse de ce qui pourrait sembler « plus propre », mais conforme à ce que le client a écrit et non à ce qu'on suppose qu'il voulait. |
 | **H9 — Portée du blocage de RG4** | Q4 dit « bloquez-le » sans dire qui : l'étudiant, l'adresse IP, le code ? | Le compteur est porté par l'**étudiant** (`tentative_code.etudiant_id`), puisqu'il n'y a ni compte ni session HTTP (Q1). | Un étudiant bloqué le reste même en changeant d'appareil ; sans authentification, c'est la seule granularité disponible. Documenté comme limite. |
 | **H10 — Un étudiant absent peut-il déposer un exercice ?** | Non tranché. Q12 parle du délai, pas de la condition de présence. | **Oui** : le dépôt n'exige pas la présence. Seul le tirage au sort exige la présence, et du côté du relecteur (Q7). | Un étudiant marqué absent peut déposer et être noté. Cohérent avec Q12 (« certains n'ont pas de connexion le soir même »). |
+| **H12 — Le contrat ne dit pas *qui* relit** | `POST /api/relectures/{id}` n'accepte que `{ note, commentaire }`. Le contrat exige pourtant un `403 AUTO_RELECTURE` — une erreur **inatteignable** si le serveur ignore l'identité de l'appelant, d'autant que le tirage (RG7) interdit déjà d'assigner l'auteur. Trou découvert à l'implémentation d'EF5, pas à l'analyse. | Ajout d'un champ **facultatif** `relecteurId` au corps : l'ensemble `required [note, commentaire]` du contrat reste inchangé. Quand il est fourni, le serveur vérifie qu'il s'agit bien du relecteur assigné. | Le `403` devient atteignable et testable. Double garde : même sans `relecteurId`, une relecture dont le relecteur *serait* l'auteur est refusée — une règle aussi catégorique que Q5 ne doit pas reposer sur un seul rempart. Un tiers qui tente de rendre la relecture d'un autre reçoit `403 RELECTEUR_NON_ASSIGNE`. |
 | **H11 — Que faire d'un `etudiantId` d'une autre promotion ?** | Non abordé. | `400 ETUDIANT_HORS_PROMOTION` : un étudiant ne peut marquer sa présence qu'à une session de sa propre promotion. | Évite qu'un code diffusé hors de la promotion soit exploitable. |
 
 *Toute hypothèse écrite ici est assumée et tranchée. Aucune décision de ce
@@ -231,6 +232,7 @@ déclarée comme hypothèse (`Hx`).*
 | Version | Quand | Ce qui a changé et pourquoi |
 |---|---|---|
 | 1 | 25/09/2026 | Version initiale, après lecture du sujet et des 16 réponses de `CLIENT.md`. |
+| 2 | 25/09/2026 | Ajout de **H12**, trou découvert en implémentant EF5 : le contrat imposé ne transmet pas l'identité du relecteur, ce qui rendait le `403 AUTO_RELECTURE` inatteignable. |
 
 > *L'étape 3 rendra une partie de ce document faux. Il faudra revenir le corriger
 > et l'inscrire ici, dans un commit qui le dit — un cahier des charges périmé est

@@ -1,4 +1,12 @@
-import type { Exercice, ExerciceDepose, Presence, Promotion, SessionCreee, Utilisateur } from './types'
+import type {
+  Exercice,
+  ExerciceDepose,
+  Presence,
+  Promotion,
+  RelectureAFaire,
+  SessionCreee,
+  Utilisateur,
+} from './types'
 
 /**
  * Couche d'accès à l'API — le SEUL endroit du frontend qui connaisse `fetch`
@@ -85,5 +93,16 @@ export const api = {
     appeler<Exercice>(`/exercices/${exerciceId}`, {
       method: 'PUT',
       body: JSON.stringify({ lien }),
+    }),
+
+  /** RG11 — les relectures assignées à un étudiant. */
+  mesRelectures: (etudiantId: number) =>
+    appeler<RelectureAFaire[]>(`/etudiants/${etudiantId}/relectures`),
+
+  /** EF5 — rendre une note et un commentaire. */
+  rendreRelecture: (relectureId: number, note: number, commentaire: string, relecteurId: number) =>
+    appeler<unknown>(`/relectures/${relectureId}`, {
+      method: 'POST',
+      body: JSON.stringify({ note, commentaire, relecteurId }),
     }),
 }
