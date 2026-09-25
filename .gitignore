@@ -77,6 +77,11 @@ Thumbs.db
 *~
 
 # ─────────────────────────────────────────────────────────────
+# Réglages locaux d'outillage : personnels, hors livrable.
+# ─────────────────────────────────────────────────────────────
+.claude/
+
+# ─────────────────────────────────────────────────────────────
 # Le dossier remis par l'examinateur (sujet, CLIENT.md, modèles).
 # Il n'est pas un livrable : il appartient au correcteur, pas au
 # candidat. Volontairement non versionné pour que le dépôt ne
