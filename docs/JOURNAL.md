@@ -131,8 +131,16 @@ Comment j'ai vérifié :
    Deux cas que l'IA n'avait pas couverts spontanément et que j'ai ajoutés :
    la quinzième minute **pile** (borne incluse ou exclue ?) et l'ordre des
    vérifications quand une séance est à la fois clôturée et expirée.
-4. **J'ai fait tourner `docker compose` depuis un clone vierge**, pas seulement
-   depuis mon dossier de travail, pour que le README dise la vérité.
+4. **J'ai fait tourner `docker compose` depuis un clone du dépôt**, pas
+   seulement depuis mon dossier de travail, pour que le README dise la vérité.
+
+   *Correction apportée à l'étape 4 :* ce que j'ai fait ici n'était pas un vrai
+   test en dossier vide — je suis resté dans mon environnement, avec mes
+   images déjà construites et mes conteneurs déjà nommés. Le seul test honnête,
+   `git clone` dans un `mktemp -d` puis suivre le README sans rien savoir
+   d'autre, n'a eu lieu qu'à l'étape 4, et il a trouvé **deux erreurs** que
+   celui-ci avait laissé passer. Je laisse la phrase d'origine et sa correction
+   côte à côte : un journal qu'on réécrit ne vaut plus rien.
 
 Ce que j'ai refusé de ce qu'elle proposait : arrondir une note décimale au lieu
 de la rejeter. Q9 dit « en nombres entiers » — arrondir, c'est inventer une
@@ -153,7 +161,7 @@ son échec annulait une écriture sans rapport. Le client disait « ma présence
 disparaît », pas « le tirage échoue » — c'est le couplage qu'il fallait traiter,
 pas la course, qui n'était que le déclencheur. 79 tests au vert.
 
-*Le changement (#23, PR #25, en cours).* Analyse complète : section 7, sept
+*Le changement (#23, PR #25, fusionnée).* Analyse complète : section 7, sept
 hypothèses H13 à H19, RG6 barrée et remplacée, RG7 / RG19 / RG22 réécrites,
 RG23 / RG24 / RG25 ajoutées, EF13 créée, contrat en révision 2, D2 et D4
 corrigés, migration **V2** écrite et vérifiée sur une base **déjà remplie**.

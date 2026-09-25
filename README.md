@@ -3,14 +3,18 @@
 Application de suivi de présence et de relecture croisée entre étudiants,
 pour un centre de formation. Épreuve finale fullstack KFOKAM48 — matricule **263**.
 
-> **État actuel : étape 2 — première version.** Les sept exigences **Must**
-> (EF1 à EF7) sont livrées, plus EF12 en bonus. Les exigences **Should**
-> (EF8 à EF11) arrivent à l'étape 4.
+> **État actuel : étape 4 — version finale, `[JALON] v1.0`.** Les sept exigences
+> **Must** (EF1 à EF7) sont livrées, plus EF12. Le bug de concurrence signalé par
+> le client à l'étape 3 est corrigé. Le passage à deux relecteurs (**EF13**) est
+> **analysé, contractualisé et migré, mais pas implémenté** — voir la section 3
+> du cahier des charges, « Périmètre exclu », et le [`CHANGELOG`](CHANGELOG.md).
+> Les exigences **Should** EF8 à EF11 ne sont pas livrées ; chaque issue restée
+> ouverte dit pourquoi et ce qu'il faudrait pour la fermer.
 
 > **Note sur le premier commit.** `[JALON] depart vO.1` est le commit vide de
 > vérification de poussée demandé par le LISEZ-MOI de l'épreuve (§2.4), fait avant
-> toute analyse. Ce n'est **pas** le jalon `v0.1`, qui viendra à sa place après
-> l'étape 2. La mise à jour du sujet du 25/09 renomme ce commit de vérification
+> toute analyse. Ce n'est **pas** le jalon `v0.1`, qui a été posé à sa place à
+> la fin de l'étape 2. La mise à jour du sujet du 25/09 renomme ce commit de vérification
 > en `chore: verification du depot` ; le mien lui est antérieur. Les trois
 > jalons notés restent `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`.
 >
@@ -45,8 +49,8 @@ docs/
 api/
   contrat.yaml              Contrat d'API figé — copie identique à la racine
 CHANGELOG.md                Ce qui a changé à chaque version, avec ses issues
-backend/                    Spring Boot, Java 17, Maven (étape 2)
-frontend/                   React + Vite (étape 2)
+backend/                    Spring Boot 3, Java 17, Maven — 79 tests
+frontend/                   React 18 + Vite + TypeScript — trois écrans
 ```
 
 ## Par où commencer la lecture
@@ -77,7 +81,7 @@ frontend/                   React + Vite (étape 2)
 | **Backend** | Spring Boot 3, Java 17, Maven (`./mvnw`) | Imposé (B1) |
 | **Frontend** | **React 18 + Vite + TypeScript** | Choisi pour son démarrage sans configuration et parce que le périmètre — trois écrans de formulaires — ne justifie ni le routage intégré ni le rendu serveur de Next.js (F1) |
 | **Base de données** | PostgreSQL en exécution, H2 en mémoire pour les tests | Les tests doivent passer sur un poste sans base locale (B6, ENF7) |
-| **Migrations** | Flyway, versionnées dès la première | `ddl-auto=update` est interdit (B5), et l'étape 3 fera bouger le schéma |
+| **Migrations** | Flyway, versionnées dès la première | `ddl-auto=update` est interdit (B5). Bien vu : l'étape 3 **a** fait bouger le schéma, absorbé par une migration `V2` ajoutée sans jamais toucher `V1` |
 | **Erreurs** | `@RestControllerAdvice` unique | Toute erreur sort en `{ code, message }` français, sans exception (B4, ENF4) |
 
 Le soin visuel n'est pas évalué : aucun temps n'est investi en CSS.
