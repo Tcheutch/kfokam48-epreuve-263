@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────────────────────
+# Java / Maven — backend
+# ─────────────────────────────────────────────────────────────
+target/
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+!**/.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties.bak
+hs_err_pid*
+replay_pid*
+
+# ─────────────────────────────────────────────────────────────
+# Node / JavaScript — frontend
+# ─────────────────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+build/
+.next/
+out/
+coverage/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.eslintcache
+.vite/
+
+# ─────────────────────────────────────────────────────────────
+# Secrets et configuration locale — jamais dans l'historique
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+application-local.properties
+application-local.yml
+secrets.*
+
+# ─────────────────────────────────────────────────────────────
+# Bases de données locales
+# ─────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+data/
+pgdata/
+
+# ─────────────────────────────────────────────────────────────
+# IDE et système
+# ─────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+!.vscode/extensions.json
+.settings/
+.project
+.classpath
+.factorypath
+nbproject/private/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ─────────────────────────────────────────────────────────────
+# Le dossier remis par l'examinateur (sujet, CLIENT.md, modèles).
+# Il n'est pas un livrable : il appartient au correcteur, pas au
+# candidat. Volontairement non versionné pour que le dépôt ne
+# contienne que ce que j'ai produit.
+# ─────────────────────────────────────────────────────────────
+Docs_fournis/
