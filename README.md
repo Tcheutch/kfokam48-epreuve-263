@@ -8,6 +8,12 @@ pour un centre de formation. Épreuve finale fullstack KFOKAM48 — matricule **
 > contrat d'API sont figés avant la première ligne. Ce fichier sera complété à
 > l'étape 2 avec les commandes de démarrage réelles, testées depuis un clone vierge.
 
+> **Note sur le premier commit.** `[JALON] depart vO.1` est le commit vide de
+> vérification de poussée demandé par le LISEZ-MOI de l'épreuve (§2.4), fait avant
+> toute analyse. Ce n'est **pas** le jalon `v0.1`, qui viendra à sa place après
+> l'étape 2. Les trois jalons notés sont, dans l'ordre : `[JALON] analyse`,
+> `[JALON] v0.1`, `[JALON] v1.0`.
+
 ---
 
 ## Le besoin en trois phrases
