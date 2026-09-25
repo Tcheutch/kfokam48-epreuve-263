@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.kfokam48.presence.depot.ExerciceRepository;
+import com.kfokam48.presence.depot.PresenceRepository;
 import com.kfokam48.presence.depot.PromotionRepository;
 import com.kfokam48.presence.depot.RelectureRepository;
 import com.kfokam48.presence.depot.SessionRepository;
@@ -24,11 +25,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * EF4 de bout en bout, et surtout RG22 — le cas que le client n'a pas prévu.
+ *
+ * <p><strong>Pas de {@code @Transactional} ici</strong> depuis l'issue #22 : le
+ * rattrapage de RG22 s'exécute après le commit de la présence, donc une classe
+ * transactionnelle — qui ne commite jamais — ne le verrait plus du tout. Les
+ * données sont nettoyées à la main.
  *
  * <p>Ce test est celui qui prouve l'hypothèse H3 : un exercice déposé alors que
  * personne d'autre n'est présent ne reste pas orphelin pour toujours ; le
@@ -37,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 class TirageRelecteurIT {
 
     @Autowired private MockMvc mockMvc;
@@ -45,6 +50,7 @@ class TirageRelecteurIT {
     @Autowired private UtilisateurRepository utilisateurs;
     @Autowired private SessionRepository sessions;
     @Autowired private ExerciceRepository exercices;
+    @Autowired private PresenceRepository presences;
     @Autowired private RelectureRepository relectures;
 
     private Long auteurId;
@@ -53,12 +59,23 @@ class TirageRelecteurIT {
 
     @BeforeEach
     void preparer() {
+        nettoyer();
         Promotion promotion = promotions.save(new Promotion("Promotion Java — test"));
         auteurId = utilisateurs.save(new Utilisateur("Awa Ndiaye", Role.ETUDIANT, promotion)).getId();
         camaradeId = utilisateurs.save(new Utilisateur("Bilal Moussa", Role.ETUDIANT, promotion)).getId();
         sessionId = sessions
                 .save(new Session("Séance du jour", "TIRAGE", Instant.now(), promotion, null))
                 .getId();
+    }
+
+    @AfterEach
+    void nettoyer() {
+        relectures.deleteAll();
+        exercices.deleteAll();
+        presences.deleteAll();
+        sessions.deleteAll();
+        utilisateurs.deleteAll();
+        promotions.deleteAll();
     }
 
     private void marquerPresence(Long etudiantId) throws Exception {
