@@ -48,11 +48,11 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 
 **Inclus dans cette version :**
 - Ouverture d'une session par un formateur, avec génération d'un code de présence expirant en 15 minutes.
-- Marquage de présence par code, avec anti-force-brute (blocage 2 minutes après 5 échecs).
+- Marquage de présence par code.
 - Ajout manuel d'une présence par le formateur, distinguable de celles marquées par les étudiants.
 - Clôture explicite d'une session par le formateur, qui fige les dépôts et les notes.
 - Dépôt et remplacement du lien d'un exercice.
-- Tirage au sort d'un relecteur unique parmi les étudiants présents, hors auteur.
+- Tirage au sort de **deux relecteurs distincts** parmi les étudiants présents, hors auteur (EF13, étape 3).
 - Notation entière sur 20 et commentaire, avec correction possible avant clôture.
 - Restitution anonyme de la note et du commentaire à l'étudiant relu.
 - Tableau récapitulatif par promotion : présences, dépôts, moyenne, relectures en attente.
@@ -63,10 +63,33 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 - **Téléversement de fichiers** : seuls des liens URL sont stockés, jamais le contenu des exercices.
 - **Notifications** (courriel, SMS, push) : le relecteur découvre sa relecture en ouvrant son écran.
 - **Temps réel** : pas de WebSocket ; les écrans se rafraîchissent au chargement ou à la demande.
-- **Second relecteur, arbitrage, contestation d'une note** (Q6 fixe un relecteur unique).
+- **Anti-force-brute sur le code de présence** (EF10, RG4, Q4) — **sorti du périmètre à l'étape 3**, voir « Ce qui est sorti du périmètre » ci-dessous.
+- **Arbitrage ou contestation d'une note** : deux relectures, une moyenne, et rien pour départager si elles divergent. Le client ne l'a pas demandé.
+- **Un troisième relecteur**, ou le remplacement d'un relecteur défaillant.
 - **Suppression ou modification d'une session après ouverture** (hors clôture).
 - **Soin apporté au CSS** : le rendu visuel n'est pas évalué, la mise en forme reste minimale et fonctionnelle.
 - **Statistiques historiques, export CSV/PDF, multi-promotion dans un même tableau.**
+
+### Ce qui est sorti du périmètre à l'étape 3, et pourquoi
+
+Le passage à deux relecteurs (EF13) est un **Must qui arrive tard**. Il touche la
+base, le contrat et le frontend en même temps. Le temps ne s'étire pas : quelque
+chose devait sortir, et le choix est écrit ici avant d'être subi.
+
+| Sortie | Pourquoi elle, et pas une autre |
+|---|---|
+| **EF10 — blocage après 5 codes erronés** (issue #10, *Should*, RG4, Q4) | C'est le seul besoin du lot qui ne vient pas d'un **usage** mais d'une **crainte**. Q4 dit « sinon ils vont deviner les codes entre eux » : le client redoute quelque chose qui ne lui est pas arrivé. Son absence ne retire rien à ce qui fonctionne, et RG21 — six caractères tirés d'un générateur sûr, soit plus d'un milliard de combinaisons — rend la devinette déjà peu praticable. **La règle RG4 reste écrite et le code d'erreur `TROP_DE_TENTATIVES` reste au contrat** : c'est une exigence reportée, pas abandonnée. |
+
+Ce qui **ne** sort **pas**, et il faut le dire aussi :
+
+- **EF9** — l'étudiant relu voit sa note. C'est précisément l'écran où la note
+  provisoire doit apparaître. Le changement de l'étape 3 la rend plus
+  nécessaire, pas moins ; la sacrifier viderait EF13 de son intérêt côté
+  étudiant.
+- **EF8** — la présence ajoutée à la main. Elle avait été envisagée comme
+  sortie, mais elle alimente le tirage : avec deux relecteurs à trouver, un
+  présent ajouté par le formateur peut être ce qui débloque un exercice resté
+  sans relecteur (RG22). Elle est devenue plus utile qu'avant.
 
 ## 4. Exigences fonctionnelles
 
@@ -81,13 +104,19 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | **EF7** | Le formateur consulte le tableau de sa promotion | Quand je sélectionne une promotion existante, alors j'obtiens `200` avec une ligne par étudiant portant `presences`, `exercicesDeposes`, `moyenne` (nulle si aucune note reçue) et `relecturesEnAttente` ; une promotion inconnue renvoie `404 PROMOTION_INCONNUE` | Must |
 | **EF8** | Le formateur ajoute une présence à la main | Quand j'ajoute un étudiant absent de la liste des présents, alors sa présence est créée avec `source = FORMATEUR` et le tableau l'affiche comme « ajoutée par le formateur » | Should |
 | **EF9** | L'étudiant relu consulte sa note et son commentaire | Quand ma relecture a été rendue, alors je vois la note et le commentaire, et aucun champ de la réponse ne permet d'identifier le relecteur | Should |
-| **EF10** | Le système limite les essais de code | Quand j'échoue 5 fois d'affilée sur un code, alors mes 2 minutes suivantes sont refusées par un `400 TROP_DE_TENTATIVES`, et un succès remet le compteur à zéro | Should |
+| **EF10** | Le système limite les essais de code | Quand j'échoue 5 fois d'affilée sur un code, alors mes 2 minutes suivantes sont refusées par un `400 TROP_DE_TENTATIVES`, et un succès remet le compteur à zéro | ~~Should~~ **Hors périmètre** (étape 3) |
 | **EF11** | Le relecteur corrige une relecture déjà rendue | Quand je resoumets une note sur une relecture déjà rendue et que la session est encore ouverte, alors je reçois `200` et la moyenne est recalculée | Should |
+| **EF13** | Chaque exercice est relu par **deux pairs différents**, et la note retenue est la moyenne des deux | Quand un exercice est déposé et qu'au moins deux autres étudiants sont présents, alors **deux** relectures sont créées pour deux étudiants distincts, jamais l'auteur ; quand une seule est rendue, la note affichée est celle-là, **marquée provisoire** ; quand les deux sont rendues, la note est leur moyenne et n'est plus provisoire | Must (étape 3) |
 | **EF12** | Le formateur liste les sessions de la promotion | Quand j'ouvre l'écran formateur, alors je vois les sessions de la promotion avec leur état (ouverte / expirée / clôturée) | Could |
 
-> Les exigences **Must** constituent le périmètre du jalon `v0.1` (étape 2).
-> Les **Should** sont livrées à l'étape 4 (`v1.0`). La **Could** saute en premier
-> si l'enveloppe de l'étape 3 consomme le temps restant.
+> Les exigences **Must** EF1 à EF7 constituent le périmètre du jalon `v0.1`
+> (étape 2), livré. **EF13** est un Must arrivé à l'étape 3 : il entre au
+> périmètre et **EF10 en sort**, voir la section 3.
+>
+> EF4 est réécrite par EF13 : « un relecteur » y devient « deux relecteurs
+> distincts ». Son libellé d'origine est conservé au-dessus parce que c'est ce
+> qui a été livré au jalon `v0.1` — un cahier des charges qui réécrit son passé
+> ne permet plus de lire l'historique.
 
 ## 5. Exigences non fonctionnelles
 
@@ -110,8 +139,8 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | **RG3** | Aucune présence ne peut être marquée après la fin de la session ; « fin de session » = expiration du code **ou** clôture par le formateur | Q3 + H1 |
 | **RG4** | Après 5 échecs consécutifs sur un code, l'étudiant est bloqué 2 minutes ; un succès remet le compteur à zéro | Q4 |
 | **RG5** | Un étudiant ne peut jamais relire son propre exercice | Q5 |
-| **RG6** | Un exercice reçoit exactement un relecteur, jamais deux | Q6 |
-| **RG7** | Le relecteur est tiré au sort par le système parmi les étudiants **présents à cette session**, l'auteur exclu | Q7 |
+| **RG6** | ~~Un exercice reçoit exactement un relecteur, jamais deux~~ → **Un exercice est relu par exactement deux relecteurs distincts** | ~~Q6~~ **périmée**, voir section 7 · enveloppe étape 3 |
+| **RG7** | Les **deux** relecteurs sont tirés au sort par le système parmi les étudiants **présents à cette session**, l'auteur exclu, et distincts l'un de l'autre | Q7 + EF13 |
 | **RG8** | L'étudiant relu voit la note et le commentaire, mais jamais l'identité du relecteur — aucun champ de l'API ne l'expose | Q8 |
 | **RG9** | Une note est un **entier** compris entre 0 et 20 inclus ; une valeur décimale est refusée | Q9 |
 | **RG10** | Le relecteur peut corriger sa note et son commentaire tant que la session n'est pas clôturée | Q10, retenu contre Q15 (section 7) |
@@ -123,10 +152,13 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | **RG16** | Au plus un exercice par couple (session, étudiant) ; un second dépôt renvoie `409 EXERCICE_DEJA_DEPOSE` | Contrat |
 | **RG17** | Un code de présence inconnu renvoie `400 CODE_INCONNU`, et non `404` | Contrat |
 | **RG18** | Le lien d'un exercice est une URL absolue en `http` ou `https` ; sinon `400 LIEN_INVALIDE` | H5 |
-| **RG19** | La `moyenne` d'un étudiant est la moyenne arithmétique des notes des relectures **rendues** portant sur ses exercices ; elle vaut `null` s'il n'en a reçu aucune, et n'est calculée que côté API | Q16, F3 |
+| **RG19** | La **note d'un exercice** est la moyenne de ses relectures **rendues**. La `moyenne` d'un étudiant est la moyenne de ses **notes d'exercice** — une moyenne de moyennes, voir H13. Elle vaut `null` s'il n'a reçu aucune note, et n'est calculée que côté API | Q16, F3, H13 |
 | **RG20** | La clôture d'une session est irréversible : après elle, plus aucune présence, plus aucun dépôt, plus aucune modification de note | H1 |
 | **RG21** | Le code de présence est unique parmi les sessions non expirées et non clôturées, et n'est pas devinable (6 caractères alphanumériques tirés d'un générateur sûr) | H6 |
-| **RG22** | Un exercice déposé alors qu'aucun autre étudiant n'est présent reste au statut `DEPOSE` ; le tirage est rejoué à chaque nouvelle présence enregistrée sur la session | H3 |
+| **RG22** | Le tirage est rejoué à chaque nouvelle présence tant que l'exercice n'a pas ses **deux** relecteurs. Avec un seul autre présent, un seul est assigné ; le second l'est dès qu'un troisième arrive | H3 + H16 |
+| **RG23** | Une note issue d'**une seule** des deux relectures est **provisoire**. Elle devient définitive quand la seconde est rendue, ou quand la clôture rend toute évolution impossible (RG20) | EF13, H18 |
+| **RG24** | Un même étudiant ne peut pas être tiré deux fois pour le même exercice — `UNIQUE (exercice_id, relecteur_id)` | EF13, RG6 |
+| **RG25** | Le rattrapage d'un exercice sans relecteur ne partage jamais la transaction de la présence qui le déclenche : son échec ne doit pas annuler la présence | issue #22 |
 
 > Ces références sont citées dans les titres d'issues, les messages de commit et
 > les noms de tests (`PresenceServiceTest#rg2_codeExpireApres15Minutes`).
@@ -138,6 +170,44 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | Réponses en conflit | Ce que j'ai choisi | Pourquoi |
 |---|---|---|
 | **Q10** — « un relecteur peut corriger sa note tant que le formateur n'a pas clôturé la session » **contre** **Q15** — « une fois que le relecteur a validé, c'est fini, il ne peut plus y revenir » | **Q10** : la correction est autorisée, et la clôture de la session est ce qui fige la note (RG10, RG20) | Q10 énonce une **règle opérationnelle bornée** — elle nomme un événement précis et vérifiable, la clôture, qui existe déjà dans la réponse Q12. Q15 énonce une **intention morale** (« c'est plus honnête »), sans borne technique. Entre une règle et une intention, on implémente la règle : elle est testable, l'autre non. Le choix de Q10 n'interdit d'ailleurs rien à Q15 — il suffit au formateur de clôturer sa session pour obtenir exactement le comportement voulu par Q15, alors que l'inverse serait impossible. Conséquence : `POST /api/relectures/{id}` est **idempotent tant que la session est ouverte** et ne renvoie `409 RELECTURE_DEJA_RENDUE` qu'après clôture (visible dans D4). |
+
+### Une réponse du client devenue fausse — Q6 (étape 3)
+
+Jusqu'ici, ce document traitait deux sortes de difficultés : des réponses qui se
+**contredisent entre elles** (Q10 contre Q15) et des questions que personne
+n'avait **posées** (H1 à H12). L'étape 3 en apporte une troisième, et elle ne se
+traite pas comme les deux autres.
+
+> **Q6 — Combien de relecteurs par exercice ?** « Un seul. »
+
+Cette réponse n'est ni ambiguë, ni incomplète, ni en conflit avec une autre.
+Elle était **juste**, et elle est devenue **fausse** : le client l'a révoquée
+après avoir essayé la première version. C'est la première fois qu'une réponse
+en contredit une autre **dans le temps** plutôt que dans le même document.
+
+La distinction n'est pas cosmétique, elle change la manière de tracer :
+
+| | Contradiction | Trou | **Réponse périmée** |
+|---|---|---|---|
+| Exemple | Q10 contre Q15 | H1, la clôture absente | **Q6** |
+| Ce qu'on fait | on tranche, on justifie | on invente, on déclare | on **remplace, et on garde la trace du remplacement** |
+| Ce qui serait fautif | trancher en silence | supposer sans l'écrire | **réécrire l'histoire** comme si Q6 n'avait jamais rien dit |
+
+**Décision.** RG6 n'est pas corrigée sur place : elle est **barrée puis
+remplacée**, et sa source reste citée comme périmée. EF4 garde son libellé
+d'origine dans la section 4, parce que c'est ce qui a été livré au jalon `v0.1`.
+Un cahier des charges qui réécrit son passé fait perdre la seule chose qu'il
+ait de plus qu'un dossier de spécifications : la lisibilité de son propre
+cheminement.
+
+**Ce que le client corrigeait en réalité.** Il ne demande pas deux relecteurs
+par goût de la symétrie. Il répare le symptôme qu'il avait lui-même décrit en
+**Q11** — « si le relecteur ne rend jamais sa relecture, l'exercice reste en
+attente et je dois le voir clairement ». Il avait signalé la panne à l'étape 1 ;
+il en apporte le remède à l'étape 3. Deux relecteurs, c'est sa réponse au
+relecteur défaillant. Cette lecture n'est pas décorative : elle dit que si les
+deux relecteurs font défaut, **le besoin d'origine, Q11, reste entier** — le
+tableau doit continuer de montrer clairement ce qui n'a pas été rendu.
 
 ### Le trou que personne n'avait vu
 
@@ -160,6 +230,14 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 | **H10 — Un étudiant absent peut-il déposer un exercice ?** | Non tranché. Q12 parle du délai, pas de la condition de présence. | **Oui** : le dépôt n'exige pas la présence. Seul le tirage au sort exige la présence, et du côté du relecteur (Q7). | Un étudiant marqué absent peut déposer et être noté. Cohérent avec Q12 (« certains n'ont pas de connexion le soir même »). |
 | **H12 — Le contrat ne dit pas *qui* relit** | `POST /api/relectures/{id}` n'accepte que `{ note, commentaire }`. Le contrat exige pourtant un `403 AUTO_RELECTURE` — une erreur **inatteignable** si le serveur ignore l'identité de l'appelant, d'autant que le tirage (RG7) interdit déjà d'assigner l'auteur. Trou découvert à l'implémentation d'EF5, pas à l'analyse. | Ajout d'un champ **facultatif** `relecteurId` au corps : l'ensemble `required [note, commentaire]` du contrat reste inchangé. Quand il est fourni, le serveur vérifie qu'il s'agit bien du relecteur assigné. | Le `403` devient atteignable et testable. Double garde : même sans `relecteurId`, une relecture dont le relecteur *serait* l'auteur est refusée — une règle aussi catégorique que Q5 ne doit pas reposer sur un seul rempart. Un tiers qui tente de rendre la relecture d'un autre reçoit `403 RELECTEUR_NON_ASSIGNE`. |
 | **H11 — Que faire d'un `etudiantId` d'une autre promotion ?** | Non abordé. | `400 ETUDIANT_HORS_PROMOTION` : un étudiant ne peut marquer sa présence qu'à une session de sa propre promotion. | Évite qu'un code diffusé hors de la promotion soit exploitable. |
+
+| **H13 — Comment se calcule la moyenne d'un étudiant, maintenant que chaque exercice a deux notes ?** | Non tranché : le client dit « la note retenue est la moyenne des deux » pour un *exercice*, et Q16 demande « la moyenne des notes reçues » pour un *étudiant*. Les deux phrases ne parlent pas du même objet. | **Moyenne de moyennes** : la note d'un exercice est la moyenne de ses relectures rendues ; la moyenne de l'étudiant est la moyenne de ses **notes d'exercice**. | **L'alternative est explicitement rejetée** : faire la moyenne à plat de toutes les relectures reçues donne un autre nombre dès que les exercices n'ont pas le même nombre de relectures rendues. Un exercice relu deux fois pèserait alors double face à un exercice relu une fois — l'étudiant serait noté sur l'assiduité de ses relecteurs, ce qui ne dépend pas de lui. Q16 dit « par étudiant : la moyenne des notes », donc une note par exercice, puis la moyenne. |
+| **H14 — Que deviennent les exercices déjà relus avant le changement ?** | Ils n'ont qu'**une** relecture. Rien dans la demande ne dit quoi en faire. | La migration **ne leur invente pas de seconde relecture**. Ils restent à une relecture rendue, donc leur note devient **provisoire** au sens de RG23 — sauf si leur séance est clôturée, auquel cas elle est définitive (RG20 : plus rien ne peut changer). | Inventer un second relecteur aurait produit une note qu'aucun humain n'a donnée. Laisser ces exercices « provisoires » à vie aurait menti sur une note que plus personne ne peut modifier. La clôture sert ici de point d'arrêt — elle existait déjà pour ça (H1). |
+| **H15 — Le caractère provisoire remonte-t-il au tableau du formateur ?** | Le client ne parle de « provisoire » que pour l'étudiant relu. Il ne dit rien de son propre tableau. | **Oui.** `GET /api/tableau` gagne un champ `moyenneProvisoire`. Les six champs imposés restent inchangés : c'est un ajout, pas une substitution. | Montrer au formateur une moyenne sans lui dire qu'elle repose sur une seule relecture sur deux, c'est le laisser décider sur une information incomplète — et Q11 dit qu'il veut justement « voir clairement » ce qui n'a pas été rendu. L'omission aurait trahi Q11 en satisfaisant EF13. |
+| **H16 — Et s'il n'y a pas deux autres présents ?** | RG5 interdit l'auto-relecture, RG7 impose de tirer parmi les présents : il faut désormais **trois** présents au minimum, l'auteur compris. En dessous, le second relecteur n'existe pas. | Assignation **partielle** : on assigne ce qu'on peut — zéro, un ou deux relecteurs — et le rattrapage de RG22 complète à chaque nouvelle présence. | C'est la même décision qu'en H3, portée d'un seuil de 2 à un seuil de 3. Refuser le dépôt aurait puni l'étudiant d'une salle peu remplie ; tirer deux fois la même personne aurait vidé « deux pairs différents » de son sens (RG24). |
+| **H17 — Deux commentaires anonymes : comment l'étudiant les distingue-t-il ?** | RG8 masque l'identité du relecteur. Avec deux relectures, l'étudiant reçoit deux textes et doit pouvoir les lire séparément sans pouvoir les attribuer. | Les relectures sont renvoyées dans un **tableau ordonné**, sans identifiant de relecteur, désignées par leur rang (« relecture 1 », « relecture 2 »). L'ordre est celui de l'assignation, stable, et ne dit rien de qui a écrit quoi. | Fusionner les deux commentaires en un seul bloc aurait rendu les retours illisibles. Exposer un identifiant de relecture permettrait le recoupement d'une séance à l'autre — deux exercices relus par la même personne trahiraient la paire. Le rang, lui, ne porte aucune information hors de l'exercice. |
+| **H18 — Les états de l'exercice ne suffisent plus** | `EN_ATTENTE` recouvrait « aucune relecture rendue ». Avec deux relecteurs, il faut distinguer « aucune rendue » de « une rendue, note provisoire ». | Un état est **ajouté** : `PARTIELLEMENT_RELU`. Le cycle devient `DEPOSE` → `EN_ATTENTE` → `PARTIELLEMENT_RELU` → `RELU`. Voir D4. | `DEPOSE` change aussi de sens : « aucun relecteur assigné » et non plus « aucun relecteur disponible ». Les valeurs déjà écrites en base restent valides, seul leur périmètre se précise — c'est pourquoi la migration n'a pas à les réécrire. |
+| **H19 — Deux relecteurs qui donnent 11 et 12 : quelle note ?** | Q9 impose une note **entière** de 0 à 20. Leur moyenne ne l'est pas. | La contrainte d'entier porte sur ce que **saisit le relecteur**, pas sur la moyenne calculée. La note d'exercice est un décimal, arrondi à deux décimales comme la moyenne du tableau (RG19). | Arrondir 11,5 à 11 ou 12 reviendrait à favoriser l'un des deux relecteurs sans raison. Q9 encadre la saisie, pas le calcul — la même distinction qu'entre une note et une moyenne dans n'importe quel bulletin. |
 
 *Toute hypothèse écrite ici est assumée et tranchée. Aucune décision de ce
 document ne repose sur une information qui n'est pas soit citée (`Qx`), soit
@@ -233,6 +311,7 @@ déclarée comme hypothèse (`Hx`).*
 |---|---|---|
 | 1 | 25/09/2026 | Version initiale, après lecture du sujet et des 16 réponses de `CLIENT.md`. |
 | 2 | 25/09/2026 | Ajout de **H12**, trou découvert en implémentant EF5 : le contrat imposé ne transmet pas l'identité du relecteur, ce qui rendait le `403 AUTO_RELECTURE` inatteignable. |
+| **3** | **25/09/2026 — après ouverture de l'enveloppe de l'étape 3** | **Le client révoque Q6.** Chaque exercice est désormais relu par deux pairs distincts, la note retenue est la moyenne des deux, et une note issue d'une seule relecture est provisoire. Conséquences portées ici : **EF13** créée ; **RG6** barrée et remplacée, **RG7**, **RG19** et **RG22** réécrites, **RG23**, **RG24** et **RG25** ajoutées ; section 7 enrichie d'une troisième catégorie de difficulté — la *réponse périmée* — et des hypothèses **H13 à H19** ; **EF10 sortie du périmètre**, avec sa justification en section 3 ; D2 et D4 mis à jour dans le même mouvement. **RG25** vient de l'issue #22, corrigée en parallèle. |
 
 > *L'étape 3 rendra une partie de ce document faux. Il faudra revenir le corriger
 > et l'inscrire ici, dans un commit qui le dit — un cahier des charges périmé est

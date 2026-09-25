@@ -2,6 +2,16 @@
 
 *Quatrième diagramme, facultatif (bonus +3 points du barème).*
 
+> **Étape 3 — ce diagramme a changé.** Le passage à deux relecteurs ajoute un
+> état, `PARTIELLEMENT_RELU` : une note issue d'une seule des deux relectures
+> est **provisoire** (RG23, H18). `DEPOSE` change aussi de sens — « aucun
+> relecteur assigné » et non plus « aucun relecteur disponible ».
+>
+> Une subtilité vaut d'être lue : **la clôture fait sortir de l'état
+> provisoire**. Tant que la séance est ouverte, la seconde relecture peut
+> encore arriver ; une fois close, plus rien ne bougera, et présenter la note
+> comme provisoire mentirait au lecteur (H14).
+
 Les trois états correspondent au champ `exercice.statut` de D2 et à la valeur
 `statut` renvoyée par `POST /api/exercices` (`201 { id, statut }`).
 
@@ -10,22 +20,30 @@ stateDiagram-v2
     [*] --> DEPOSE : POST /api/exercices — l'étudiant dépose son lien (EF3)
 
     DEPOSE : DEPOSE
-    DEPOSE : aucun relecteur disponible
+    DEPOSE : aucun relecteur assigné
     EN_ATTENTE : EN_ATTENTE
-    EN_ATTENTE : relecture assignée, pas encore rendue
+    EN_ATTENTE : un ou deux relecteurs assignés, aucune relecture rendue
+    PARTIELLEMENT_RELU : PARTIELLEMENT_RELU
+    PARTIELLEMENT_RELU : une seule des deux rendues — note PROVISOIRE (RG23)
     RELU : RELU
-    RELU : note et commentaire rendus
+    RELU : les deux relectures rendues — note définitive, moyenne des deux
 
     DEPOSE --> DEPOSE : remplacement du lien (RG13)
-    DEPOSE --> EN_ATTENTE : tirage au sort d'un relecteur présent, hors auteur (RG5, RG7)
+    DEPOSE --> EN_ATTENTE : tirage d'un ou deux relecteurs présents, hors auteur (RG5, RG7)
+    DEPOSE --> DEPOSE : moins de deux autres présents — rejeu à la prochaine arrivée (RG22, H16)
 
-    EN_ATTENTE --> EN_ATTENTE : remplacement du lien tant que la relecture n'est pas rendue (RG13)
-    EN_ATTENTE --> RELU : POST /api/relectures/{id} — 200 (EF5)
+    EN_ATTENTE --> EN_ATTENTE : le second relecteur est assigné à son tour (RG22)
+    EN_ATTENTE --> EN_ATTENTE : remplacement du lien tant qu'aucune relecture n'est rendue (RG13)
+    EN_ATTENTE --> PARTIELLEMENT_RELU : la PREMIÈRE relecture est rendue (EF5, EF13)
 
-    RELU --> RELU : le relecteur corrige sa note tant que la session est ouverte (RG10, Q10 retenu contre Q15)
+    PARTIELLEMENT_RELU --> RELU : la SECONDE relecture est rendue — la note cesse d'être provisoire
+    PARTIELLEMENT_RELU --> PARTIELLEMENT_RELU : le relecteur corrige sa note (RG10)
+
+    RELU --> RELU : l'un des deux corrige sa note tant que la session est ouverte (RG10, Q10 retenu contre Q15)
 
     DEPOSE --> FIGE : clôture de la session par le formateur (RG20)
-    EN_ATTENTE --> FIGE : clôture — l'exercice reste « en attente » et compte dans relecturesEnAttente (RG11)
+    EN_ATTENTE --> FIGE : clôture — l'exercice reste sans note, et Q11 veut que ça se voie
+    PARTIELLEMENT_RELU --> FIGE : clôture — la note cesse d'être provisoire : plus rien ne peut la changer (H14)
     RELU --> FIGE : clôture — la note devient définitive
 
     FIGE : FIGE (session clôturée)

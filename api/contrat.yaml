@@ -9,6 +9,14 @@ info:
     mêmes chemins, mêmes verbes, mêmes codes de statut, même format d'erreur.
     Elles sont marquées `[IMPOSÉE]`.
 
+    **Révision 2 — étape 3.** Le client a révoqué Q6 : chaque exercice est
+    désormais relu par DEUX pairs distincts et la note retenue est la moyenne
+    des deux ; une note issue d'une seule relecture est PROVISOIRE (EF13, RG23).
+    Les CINQ opérations imposées sont inchangées — mêmes chemins, mêmes verbes,
+    mêmes statuts, mêmes champs requis. Seules des propriétés FACULTATIVES sont
+    ajoutées à des réponses, et l'énumération `statut` d'un exercice gagne une
+    valeur.
+
     Les opérations marquées `[AJOUTÉE]` comblent les trous documentés en
     section 7 du cahier des charges (`docs/CAHIER_DES_CHARGES.md`) :
     la clôture de session (H1), la présence manuelle du formateur (H2, Q14),
@@ -460,6 +468,16 @@ paths:
                     exercicesDeposes: { type: integer }
                     moyenne: { type: number, nullable: true }
                     relecturesEnAttente: { type: integer }
+                    moyenneProvisoire:
+                      type: boolean
+                      description: |
+                        AJOUT étape 3, FACULTATIF (H15) — vrai quand au moins un
+                        des exercices de l'étudiant n'a reçu qu'une des deux
+                        relectures attendues. Les six champs imposés sont
+                        inchangés ; celui-ci s'ajoute, parce que montrer une
+                        moyenne sans dire qu'elle repose sur la moitié des
+                        relectures laisserait le formateur décider sur une
+                        information incomplète — ce que Q11 lui refuse.
               example:
                 - etudiantId: 7
                   nom: "Awa Ndiaye"
@@ -596,7 +614,7 @@ components:
         sessionId: { type: integer, format: int64 }
         etudiantId: { type: integer, format: int64 }
         lien: { type: string, format: uri }
-        statut: { type: string, enum: [DEPOSE, EN_ATTENTE, RELU] }
+        statut: { type: string, enum: [DEPOSE, EN_ATTENTE, PARTIELLEMENT_RELU, RELU] }
         deposeAt: { type: string, format: date-time }
 
     Relecture:
@@ -640,12 +658,44 @@ components:
         sessionId: { type: integer, format: int64 }
         sessionTitre: { type: string }
         lien: { type: string, format: uri }
-        statut: { type: string, enum: [DEPOSE, EN_ATTENTE, RELU] }
-        note: { type: integer, nullable: true }
-        commentaire: { type: string, nullable: true }
+        statut:
+          type: string
+          enum: [DEPOSE, EN_ATTENTE, PARTIELLEMENT_RELU, RELU]
+          description: |
+            PARTIELLEMENT_RELU est ajouté à l'étape 3 : une seule des deux
+            relectures est rendue, la note est provisoire (RG23, H18).
+        note:
+          type: number
+          nullable: true
+          description: |
+            Depuis l'étape 3, MOYENNE des relectures rendues sur cet exercice,
+            et non plus la note unique d'un relecteur. Décimale : la contrainte
+            d'entier de Q9 porte sur ce que SAISIT le relecteur, pas sur la
+            moyenne calculée (H19).
+        noteProvisoire:
+          type: boolean
+          description: |
+            AJOUT étape 3 (RG23) — vrai quand une seule des deux relectures est
+            rendue. Repasse à faux quand la seconde arrive, ou à la clôture de
+            la séance, qui rend toute évolution impossible (H14).
+        commentaires:
+          type: array
+          description: |
+            AJOUT étape 3 — un élément par relecture rendue, dans l'ordre
+            d'assignation. Aucun identifiant de relecteur : l'étudiant doit
+            pouvoir lire les deux retours séparément sans pouvoir les
+            attribuer (RG8, H17). Remplace `commentaire`, conservé le temps de
+            la transition.
+          items: { type: string }
+        commentaire:
+          type: string
+          nullable: true
+          description: DÉPRÉCIÉ depuis l'étape 3 — voir `commentaires`.
+        relecturesRendues: { type: integer, description: 0, 1 ou 2 }
+        relecturesAttendues: { type: integer, description: Nombre de relecteurs assignés (RG6 étape 3). }
         lienRemplacable:
           type: boolean
-          description: Vrai tant que la relecture n'a pas été rendue (RG13, H4).
+          description: Vrai tant qu'aucune relecture n'a été rendue (RG13, H4).
 
   responses:
     Erreur:
