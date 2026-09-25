@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api, ErreurApi } from '../api/client'
-import type { Promotion, SessionCreee } from '../api/types'
+import type { Promotion, Session, SessionCreee } from '../api/types'
 import { Chargement, Erreur } from '../composants/Etat'
 
 /**
- * Écran formateur — EF1 : ouvrir une session et afficher son code.
+ * Écran formateur — EF1 (ouvrir une séance), EF12 (les lister avec leur état)
+ * et EF6 (les clôturer).
  *
- * Le tableau de bord (EF7) et la clôture (EF6) viendront s'ajouter ici,
- * sur leurs propres branches.
+ * Les trois états affichés — ouverte, expirée, clôturée — viennent de l'API
+ * (champ `etat`). Le front ne les recalcule pas à partir des dates : ce serait
+ * dupliquer RG2 et RG20.
  */
 export function EcranFormateur() {
   const [promotions, setPromotions] = useState<Promotion[] | null>(null)
   const [promotionId, setPromotionId] = useState<number | ''>('')
   const [titre, setTitre] = useState('')
-  const [session, setSession] = useState<SessionCreee | null>(null)
+  const [nouvelleSession, setNouvelleSession] = useState<SessionCreee | null>(null)
+  const [sessions, setSessions] = useState<Session[] | null>(null)
   const [erreur, setErreur] = useState<ErreurApi | null>(null)
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
 
@@ -27,18 +30,48 @@ export function EcranFormateur() {
       .catch((e: ErreurApi) => setErreur(e))
   }, [])
 
+  const rechargerSessions = useCallback(async () => {
+    if (promotionId === '') return
+    try {
+      setSessions(await api.sessions(promotionId))
+    } catch (e) {
+      setErreur(e as ErreurApi)
+    }
+  }, [promotionId])
+
+  useEffect(() => {
+    void rechargerSessions()
+  }, [rechargerSessions])
+
   async function ouvrir(evenement: React.FormEvent) {
     evenement.preventDefault()
     if (promotionId === '') return
     setEnvoiEnCours(true)
     setErreur(null)
     try {
-      setSession(await api.ouvrirSession(titre, promotionId))
+      setNouvelleSession(await api.ouvrirSession(titre, promotionId))
+      setTitre('')
+      await rechargerSessions()
     } catch (e) {
       setErreur(e as ErreurApi)
-      setSession(null)
+      setNouvelleSession(null)
     } finally {
       setEnvoiEnCours(false)
+    }
+  }
+
+  async function cloturer(session: Session) {
+    // RG20 — irréversible : on le dit avant, pas après.
+    if (!window.confirm(`Clôturer « ${session.titre} » ? C'est définitif : plus aucun dépôt, plus aucune note.`)) {
+      return
+    }
+    setErreur(null)
+    try {
+      await api.cloturerSession(session.id)
+      if (nouvelleSession?.id === session.id) setNouvelleSession(null)
+      await rechargerSessions()
+    } catch (e) {
+      setErreur(e as ErreurApi)
     }
   }
 
@@ -46,7 +79,7 @@ export function EcranFormateur() {
 
   return (
     <section>
-      <h2>Ouvrir une session</h2>
+      <h2>Ouvrir une séance</h2>
 
       <form onSubmit={ouvrir}>
         <p>
@@ -57,6 +90,7 @@ export function EcranFormateur() {
             value={titre}
             onChange={(e) => setTitre(e.target.value)}
             placeholder="Spring Boot — jour 4"
+            style={{ width: '100%', boxSizing: 'border-box' }}
           />
         </p>
 
@@ -77,25 +111,72 @@ export function EcranFormateur() {
         </p>
 
         <button type="submit" disabled={envoiEnCours || promotionId === ''}>
-          {envoiEnCours ? 'Ouverture…' : 'Ouvrir la session'}
+          {envoiEnCours ? 'Ouverture…' : 'Ouvrir la séance'}
         </button>
       </form>
 
       {erreur && <Erreur message={erreur.message} code={erreur.code} />}
 
-      {session && (
+      {nouvelleSession && (
         <div>
           <h3>Code de présence</h3>
           <p style={{ fontSize: '2.5rem', letterSpacing: '0.3rem', fontFamily: 'monospace' }}>
-            {session.code}
+            {nouvelleSession.code}
           </p>
-          {/* L'expiration vient de l'API (RG2) : elle n'est pas recalculée ici. */}
+          {/* L'heure d'expiration vient de l'API (RG2), elle n'est pas recalculée ici. */}
           <p>
             Valable jusqu'à{' '}
-            <strong>{new Date(session.expirationAt).toLocaleTimeString('fr-FR')}</strong>.
+            <strong>{new Date(nouvelleSession.expirationAt).toLocaleTimeString('fr-FR')}</strong>.
           </p>
         </div>
       )}
+
+      <h2>Mes séances</h2>
+      {sessions === null ? (
+        <Chargement quoi="des séances" />
+      ) : sessions.length === 0 ? (
+        <p>Aucune séance pour cette promotion.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th align="left">Séance</th>
+              <th align="left">Code</th>
+              <th align="left">État</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {sessions.map((session) => (
+              <tr key={session.id}>
+                <td>{session.titre}</td>
+                {/* Le code n'a de sens que tant qu'il marche. */}
+                <td style={{ fontFamily: 'monospace' }}>
+                  {session.etat === 'OUVERTE' ? session.code : '—'}
+                </td>
+                <td>{libelleEtat(session)}</td>
+                <td>
+                  {session.etat !== 'CLOTUREE' && (
+                    <button onClick={() => cloturer(session)}>Clôturer</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </section>
   )
+}
+
+/** Les trois notions restent distinctes jusque dans les mots affichés (H1). */
+function libelleEtat(session: Session): string {
+  switch (session.etat) {
+    case 'OUVERTE':
+      return 'Ouverte — le code marche'
+    case 'EXPIREE':
+      return 'Code expiré — les dépôts restent possibles'
+    case 'CLOTUREE':
+      return 'Clôturée — tout est figé'
+  }
 }
