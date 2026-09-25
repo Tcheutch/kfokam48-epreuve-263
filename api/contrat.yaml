@@ -350,6 +350,13 @@ paths:
               properties:
                 note: { type: integer, minimum: 0, maximum: 20 }
                 commentaire: { type: string }
+                relecteurId:
+                  type: integer
+                  format: int64
+                  description: |
+                    AJOUT FACULTATIF (hypothèse H12) — le corps imposé ne dit pas
+                    qui agit, ce qui rendrait le 403 AUTO_RELECTURE inatteignable.
+                    Facultatif : l'ensemble required du contrat est inchangé.
             example: { note: 15, commentaire: "Bonne structure, tests manquants." }
       responses:
         "200":
@@ -362,7 +369,7 @@ paths:
           # NOTE_INVALIDE (décimale, hors 0..20, ou absente) · CHAMP_MANQUANT
         "403":
           $ref: "#/components/responses/Erreur"
-          # AUTO_RELECTURE
+          # AUTO_RELECTURE · RELECTEUR_NON_ASSIGNE
         "404":
           $ref: "#/components/responses/Erreur"
           # RELECTURE_INCONNUE
@@ -662,6 +669,7 @@ components:
         | SESSION_CLOTUREE         | 409 | La session est clôturée, tout est figé (RG20) |
         | NOTE_INVALIDE            | 400 | Note non entière ou hors 0..20 (RG9) |
         | AUTO_RELECTURE           | 403 | Un étudiant ne relit pas son propre exercice (RG5) |
+        | RELECTEUR_NON_ASSIGNE    | 403 | La relecture est assignée à un autre étudiant (H12) |
         | RELECTURE_DEJA_RENDUE    | 409 | Note figée par la clôture (RG10) ou lien non remplaçable (RG13) |
         | PROMOTION_INCONNUE       | 404 | Promotion introuvable — mais **400** sur POST /api/sessions, seul statut d'erreur que le contrat imposé y prévoit |
         | SESSION_INCONNUE         | 404 | Session introuvable |

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { EcranEtudiant } from './ecrans/EcranEtudiant'
 import { EcranFormateur } from './ecrans/EcranFormateur'
+import { EcranRelecteur } from './ecrans/EcranRelecteur'
 
 /**
  * Trois écrans, un par rôle (contrainte F2). Sans authentification (Q1, RG1),
@@ -29,7 +30,7 @@ export default function App() {
 
       {onglet === 'formateur' && <EcranFormateur />}
       {onglet === 'etudiant' && <EcranEtudiant />}
-      {onglet === 'relecteur' && <p>Écran relecteur — à venir (EF5).</p>}
+      {onglet === 'relecteur' && <EcranRelecteur />}
     </main>
   )
 }

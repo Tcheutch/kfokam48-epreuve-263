@@ -24,6 +24,7 @@ public enum CodeErreur {
     SESSION_CLOTUREE(HttpStatus.CONFLICT, "La session est clôturée : plus aucune modification n'est possible."),
     NOTE_INVALIDE(HttpStatus.BAD_REQUEST, "La note doit être un nombre entier compris entre 0 et 20."),
     AUTO_RELECTURE(HttpStatus.FORBIDDEN, "Un étudiant ne peut pas relire son propre exercice."),
+    RELECTEUR_NON_ASSIGNE(HttpStatus.FORBIDDEN, "Cette relecture est assignée à quelqu'un d'autre."),
     RELECTURE_DEJA_RENDUE(HttpStatus.CONFLICT, "Cette relecture a été rendue et ne peut plus être modifiée."),
     PROMOTION_INCONNUE(HttpStatus.NOT_FOUND, "Cette promotion est introuvable."),
     SESSION_INCONNUE(HttpStatus.NOT_FOUND, "Cette session est introuvable."),
