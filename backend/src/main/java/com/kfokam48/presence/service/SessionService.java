@@ -11,6 +11,7 @@ import com.kfokam48.presence.erreur.CodeErreur;
 import com.kfokam48.presence.erreur.ErreurMetier;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,8 +81,43 @@ public class SessionService {
                 "Impossible de tirer un code de présence libre après " + TIRAGES_MAX + " essais.");
     }
 
+    /**
+     * EF6 — clôture la session. <strong>C'est l'opération que le contrat imposé
+     * ne prévoyait pas</strong> (hypothèse H1), alors que Q10 et Q12 y
+     * conditionnent deux règles majeures.
+     *
+     * <p>RG20 — elle est irréversible, et distincte de l'expiration du code :
+     * une session expirée accepte encore des dépôts (RG12), une session
+     * clôturée n'accepte plus rien.
+     */
+    @Transactional
+    public Session cloturer(Long sessionId) {
+        Session session = sessions
+                .findById(sessionId)
+                .orElseThrow(() -> new ErreurMetier(CodeErreur.SESSION_INCONNUE));
+
+        if (session.estCloturee()) {
+            throw new ErreurMetier(CodeErreur.SESSION_CLOTUREE);
+        }
+
+        session.cloturer(Instant.now(horloge));
+        return session;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Session> deLaPromotion(Long promotionId) {
+        if (!promotions.existsById(promotionId)) {
+            throw new ErreurMetier(CodeErreur.PROMOTION_INCONNUE);
+        }
+        return sessions.findByPromotionIdOrderByOuvertureAtDesc(promotionId);
+    }
+
     @Transactional(readOnly = true)
     public Session parId(Long id) {
         return sessions.findById(id).orElseThrow(() -> new ErreurMetier(CodeErreur.SESSION_INCONNUE));
+    }
+
+    public Instant maintenant() {
+        return Instant.now(horloge);
     }
 }

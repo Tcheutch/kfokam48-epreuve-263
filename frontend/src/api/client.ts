@@ -4,6 +4,7 @@ import type {
   Presence,
   Promotion,
   RelectureAFaire,
+  Session,
   SessionCreee,
   Utilisateur,
 } from './types'
@@ -73,6 +74,13 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ titre, promotionId }),
     }),
+
+  /** EF12 — les séances d'une promotion et leur état. */
+  sessions: (promotionId: number) => appeler<Session[]>(`/sessions?promotionId=${promotionId}`),
+
+  /** EF6 — le formateur clôture une séance. Irréversible (RG20). */
+  cloturerSession: (sessionId: number) =>
+    appeler<Session>(`/sessions/${sessionId}/cloture`, { method: 'POST' }),
 
   /** EF2 — l'étudiant marque sa présence. */
   marquerPresence: (code: string, etudiantId: number) =>
