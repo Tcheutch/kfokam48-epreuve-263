@@ -10,8 +10,13 @@ pour un centre de formation. Épreuve finale fullstack KFOKAM48 — matricule **
 > **Note sur le premier commit.** `[JALON] depart vO.1` est le commit vide de
 > vérification de poussée demandé par le LISEZ-MOI de l'épreuve (§2.4), fait avant
 > toute analyse. Ce n'est **pas** le jalon `v0.1`, qui viendra à sa place après
-> l'étape 2. Les trois jalons notés sont, dans l'ordre : `[JALON] analyse`,
-> `[JALON] v0.1`, `[JALON] v1.0`.
+> l'étape 2. La mise à jour du sujet du 25/09 renomme ce commit de vérification
+> en `chore: verification du depot` ; le mien lui est antérieur. Les trois
+> jalons notés restent `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`.
+>
+> Le commit n'est pas renommé pour autant : c'est le commit **racine**, le
+> réécrire imposerait un `push --force` sur `main` — pénalisé au barème — pour
+> lever une ambiguïté que cette note traite déjà.
 
 ---
 

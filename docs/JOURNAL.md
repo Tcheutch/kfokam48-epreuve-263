@@ -47,7 +47,7 @@ choix du frontend justifié. Puis `[JALON] analyse`.
   vide de sens (H4).
 
 **IA :** je lui ai demandé un premier jet du cahier des charges à partir du sujet
-et des 16 réponses, puis le découpage en tickets, puis le contrat OpenAPI.
+et des 16 réponses, puis le découpage en issues, puis le contrat OpenAPI.
 
 Comment j'ai vérifié :
 
@@ -62,11 +62,12 @@ Comment j'ai vérifié :
    vérifié que chacune était soit citée dans une règle de gestion, soit écartée
    volontairement. Q1 à Q16 : toutes tracées. Inversement, chaque RG cite un `Qx`
    ou un `Hx` — aucune règle ne sort de nulle part.
-3. **Le backlog, au test du client.** L'IA proposait des tickets techniques
-   (« créer l'entité Session », « configurer Flyway »). Je les ai écartés : un
-   ticket doit être un résultat que le client comprend. Je suis reparti des
+3. **Le backlog, au test du client.** L'IA proposait des issues techniques
+   (« créer l'entité Session », « configurer Flyway »). Je les ai écartées : une
+   issue doit être un résultat que le client comprend. Je suis reparti des
    exigences fonctionnelles, une issue par EF, douze au total. Les tâches
-   techniques deviennent des sous-tâches de ces issues, pas des tickets.
+   techniques deviennent des sous-tâches de ces issues, pas des issues à part
+   entière.
 4. **Les diagrammes contre le contrat.** D3 a été relu ligne à ligne pour que ses
    codes HTTP soient exactement ceux de `POST /api/presences` (201, 400, 409,
    410) ; D2 porte les contraintes `UNIQUE` qui produisent les 409.
@@ -158,9 +159,10 @@ RG23 / RG24 / RG25 ajoutées, EF13 créée, contrat en révision 2, D2 et D4
 corrigés, migration **V2** écrite et vérifiée sur une base **déjà remplie**.
 En deux commits distincts : l'analyse, puis la migration.
 
-*Deux correctifs d'hygiène en début d'étape :* l'énoncé et `git-lab.bundle`
-n'étaient exclus que dans `Docs_fournis/` — un `git add -A` distrait les
-publiait dans un dépôt public. Et `docs/ERREURS.md` ne disait pas que le code
+*Deux correctifs d'hygiène en début d'étape :* l'énoncé — `EPREUVE/`,
+`SUJET.md`, `CLIENT.md`, `enveloppe*.md` — n'était exclu que dans
+`Docs_fournis/` : déposé ailleurs dans l'arbre, un `git add -A` distrait
+l'aurait publié dans un dépôt public. Et `docs/ERREURS.md` ne disait pas que le code
 `DEMO01` n'est valable que quinze minutes : trois de ses commandes, dont le cas
 nominal, auraient renvoyé `410` chez un correcteur lisant le document une heure
 après avoir lancé la pile — un comportement correct pris pour un défaut.
@@ -261,17 +263,7 @@ complètement rapporte plus que coder à moitié. C'est écrit dans la PR #25, d
 
 ---
 
-## Étape 5 — Épreuve Git
-
-**Fait :**
-
-**Bloqué :**
-
-**IA :**
-
----
-
-## Étape 6 — Soumission
+## Étape 5 — Soumission
 
 **Fait :**
 

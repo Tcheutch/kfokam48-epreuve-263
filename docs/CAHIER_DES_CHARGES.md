@@ -282,7 +282,7 @@ déclarée comme hypothèse (`Hx`).*
 | `README.md` d'installation, testé depuis un clone vierge | racine | `v1.0` |
 | `CHANGELOG.md` cohérent avec l'historique Git | racine | `v1.0` |
 | `docker-compose.yml` | racine | `v0.1` |
-| `SOUMISSION.md` téléversé sur la plateforme | hors dépôt | étape 6 |
+| `SOUMISSION.md` téléversé sur la plateforme | hors dépôt | étape 5 |
 
 ## 10. Démarche prévue
 
@@ -292,10 +292,9 @@ déclarée comme hypothèse (`Hx`).*
 | **2. Première version** | Les seules stories **Must** (EF1 à EF7). Une branche par issue, une PR par branche, `Closes #n` dans le commit de fusion. `.gitignore` et migration initiale **avant** le premier code. Puis `[JALON] v0.1`. | Je livre EF1, EF2, EF3, EF7 (le cœur : session → présence → dépôt → tableau) et repousse EF4/EF5 en Should. |
 | **3. Enveloppe** | Ouvrir une issue **avant** de coder, reproduire le bug par un test qui échoue, corriger dans une migration versionnée, mettre à jour `contrat.yaml`, puis ce document et les diagrammes dans un commit qui le dit. Correctif et évolution dans des commits séparés. | Je re-priorise par écrit dans `JOURNAL.md` et je sors les **Could** du périmètre. |
 | **4. Version finale** | Les **Should**, `[JALON] v1.0`, `CHANGELOG.md`, `README` testé depuis un clone vierge dans un dossier vide, backlog restant trié et annoté. | Je préfère un périmètre réduit **annoncé** dans `SOUMISSION.md` à une promesse non tenue. |
-| **5. Épreuve Git** | Dépôt séparé `kfokam48-gitlab-263`, les cinq situations résolues, toutes les branches poussées. ~20 minutes, jamais mélangé à l'historique du projet. | Cette étape vaut 17 points pour 20 minutes : elle passe **avant** tout polissage du produit. |
-| **6. Soumission** | `SOUMISSION.md` rempli, deux liens vérifiés en navigation privée, hashes complets relevés **après** le dernier push. | Aucune marge : la plateforme ferme à 18h00, je vise 17h00. |
+| **5. Soumission** | `SOUMISSION.md` rempli, le lien vérifié en navigation privée, hash complet relevé **après** le dernier push. | Aucune marge : la plateforme ferme à 18h00, je vise 17h00. |
 
-**Definition of Done — un ticket est terminé quand :**
+**Definition of Done — une issue est terminée quand :**
 - Les critères d'acceptation écrits dans l'issue sont vérifiés à la main sur l'application qui tourne.
 - La règle de gestion citée dans l'issue (`RGx`) est couverte par un test automatisé qui la nomme.
 - Le contrat d'API est respecté : chemin, verbe, statut et format `{ code, message }` sur **tous** les cas d'erreur, vérifiés à la main ou par test.
@@ -312,6 +311,7 @@ déclarée comme hypothèse (`Hx`).*
 | 1 | 25/09/2026 | Version initiale, après lecture du sujet et des 16 réponses de `CLIENT.md`. |
 | 2 | 25/09/2026 | Ajout de **H12**, trou découvert en implémentant EF5 : le contrat imposé ne transmet pas l'identité du relecteur, ce qui rendait le `403 AUTO_RELECTURE` inatteignable. |
 | **3** | **25/09/2026 — après ouverture de l'enveloppe de l'étape 3** | **Le client révoque Q6.** Chaque exercice est désormais relu par deux pairs distincts, la note retenue est la moyenne des deux, et une note issue d'une seule relecture est provisoire. Conséquences portées ici : **EF13** créée ; **RG6** barrée et remplacée, **RG7**, **RG19** et **RG22** réécrites, **RG23**, **RG24** et **RG25** ajoutées ; section 7 enrichie d'une troisième catégorie de difficulté — la *réponse périmée* — et des hypothèses **H13 à H19** ; **EF10 sortie du périmètre**, avec sa justification en section 3 ; D2 et D4 mis à jour dans le même mouvement. **RG25** vient de l'issue #22, corrigée en parallèle. |
+| **4** | **25/09/2026 — mise à jour du sujet** | L'énoncé a été révisé en cours d'épreuve. **L'épreuve Git sur dépôt fourni est supprimée** — le dépôt de l'exercice n'a jamais existé — et la démarche est renumérotée en **cinq** étapes, « Soumission » devenant l'étape 5. Le poids de Git passe à 30 points, portés entièrement par l'historique de **ce** dépôt : il n'y a plus de second dépôt où démontrer la maîtrise de Git, donc celui-ci porte tout. Le vocabulaire est unifié sur « issue », « ticket » disparaissant de l'énoncé. Section 9, section 10 et la Definition of Done sont alignées ; rien d'autre n'a bougé. |
 
 > *L'étape 3 rendra une partie de ce document faux. Il faudra revenir le corriger
 > et l'inscrire ici, dans un commit qui le dit — un cahier des charges périmé est
