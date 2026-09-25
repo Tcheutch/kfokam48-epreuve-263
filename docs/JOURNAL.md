@@ -342,6 +342,16 @@ tenue, et je l'ai pris au mot à chaque étape.
   aveugle à toute une famille de défauts — et c'est précisément la famille qui
   ne se reproduit pas chez soi.
 
+  *Constaté une troisième fois, après coup.* En habillant l'interface, l'écran
+  relecteur s'est mis à afficher `500 ERREUR_INTERNE` — bien visible une fois
+  l'état d'erreur stylé, invisible avant. `GET /api/etudiants/{id}/relectures`
+  levait une `LazyInitializationException` : la conversion en DTO a lieu après
+  la fermeture de la session Hibernate, et aucun de mes 79 tests ne pouvait
+  l'attraper, pour la même raison qu'en #22. **L'écran était cassé depuis
+  l'étape 2.** Ce n'est donc plus une prédiction : c'est une observation, faite
+  trois fois, sur trois défauts sans rapport entre eux. Corrigé par un
+  `join fetch`, avec un test sans `@Transactional` — écrit rouge d'abord.
+
 - **Je nommerais toutes les contraintes dès `V1`.** Retirer
   `UNIQUE (exercice_id)` a été pénible pour une seule raison : elle était
   déclarée en ligne, donc anonyme, et chaque moteur l'a nommée à sa façon. Cinq

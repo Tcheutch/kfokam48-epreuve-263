@@ -88,6 +88,7 @@ Thumbs.db
 # contienne que ce que j'ai produit.
 # ─────────────────────────────────────────────────────────────
 Docs_fournis/
+Docs_epreuves/
 
 # Les mêmes fichiers s'ils sont déposés ailleurs qu'en Docs_fournis/.
 # Un seul « git add -A » distrait suffirait à publier l'énoncé et le
