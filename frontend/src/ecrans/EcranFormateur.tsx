@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api, ErreurApi } from '../api/client'
 import type { Promotion, Session, SessionCreee } from '../api/types'
 import { Chargement, Erreur } from '../composants/Etat'
+import { TableauPromotion } from '../composants/TableauPromotion'
 
 /**
  * Écran formateur — EF1 (ouvrir une séance), EF12 (les lister avec leur état)
@@ -130,6 +131,9 @@ export function EcranFormateur() {
           </p>
         </div>
       )}
+
+      <h2>Suivi de la promotion</h2>
+      {promotionId !== '' && <TableauPromotion promotionId={promotionId} key={`${promotionId}-${sessions?.length}`} />}
 
       <h2>Mes séances</h2>
       {sessions === null ? (

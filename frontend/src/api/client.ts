@@ -3,6 +3,7 @@ import type {
   ExerciceDepose,
   Presence,
   Promotion,
+  LigneTableau,
   RelectureAFaire,
   Session,
   SessionCreee,
@@ -74,6 +75,12 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ titre, promotionId }),
     }),
+
+  /**
+   * EF7 — le tableau du formateur. La moyenne arrive calculée : aucune
+   * division n'est faite côté écran (F3).
+   */
+  tableau: (promotionId: number) => appeler<LigneTableau[]>(`/tableau?promotionId=${promotionId}`),
 
   /** EF12 — les séances d'une promotion et leur état. */
   sessions: (promotionId: number) => appeler<Session[]>(`/sessions?promotionId=${promotionId}`),
