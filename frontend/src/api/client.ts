@@ -1,4 +1,4 @@
-import type { Promotion, SessionCreee, Utilisateur } from './types'
+import type { Presence, Promotion, SessionCreee, Utilisateur } from './types'
 
 /**
  * Couche d'accès à l'API — le SEUL endroit du frontend qui connaisse `fetch`
@@ -64,5 +64,12 @@ export const api = {
     appeler<SessionCreee>('/sessions', {
       method: 'POST',
       body: JSON.stringify({ titre, promotionId }),
+    }),
+
+  /** EF2 — l'étudiant marque sa présence. */
+  marquerPresence: (code: string, etudiantId: number) =>
+    appeler<Presence>('/presences', {
+      method: 'POST',
+      body: JSON.stringify({ code, etudiantId }),
     }),
 }

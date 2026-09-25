@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EcranEtudiant } from './ecrans/EcranEtudiant'
 import { EcranFormateur } from './ecrans/EcranFormateur'
 
 /**
@@ -27,7 +28,7 @@ export default function App() {
       </nav>
 
       {onglet === 'formateur' && <EcranFormateur />}
-      {onglet === 'etudiant' && <p>Écran étudiant — à venir (EF2, EF3).</p>}
+      {onglet === 'etudiant' && <EcranEtudiant />}
       {onglet === 'relecteur' && <p>Écran relecteur — à venir (EF5).</p>}
     </main>
   )

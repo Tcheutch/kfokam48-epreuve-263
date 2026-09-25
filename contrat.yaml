@@ -167,7 +167,7 @@ paths:
               example: { id: 55, sessionId: 12, etudiantId: 7, source: ETUDIANT }
         "400":
           $ref: "#/components/responses/Erreur"
-          # CODE_INCONNU · CHAMP_MANQUANT · TROP_DE_TENTATIVES · ETUDIANT_HORS_PROMOTION
+          # CODE_INCONNU · CHAMP_MANQUANT · TROP_DE_TENTATIVES · ETUDIANT_HORS_PROMOTION · ETUDIANT_INCONNU
         "409":
           $ref: "#/components/responses/Erreur"
           # DEJA_PRESENT · SESSION_CLOTUREE
@@ -665,7 +665,7 @@ components:
         | RELECTURE_DEJA_RENDUE    | 409 | Note figée par la clôture (RG10) ou lien non remplaçable (RG13) |
         | PROMOTION_INCONNUE       | 404 | Promotion introuvable — mais **400** sur POST /api/sessions, seul statut d'erreur que le contrat imposé y prévoit |
         | SESSION_INCONNUE         | 404 | Session introuvable |
-        | ETUDIANT_INCONNU         | 404 | Utilisateur introuvable |
+        | ETUDIANT_INCONNU         | 404 | Utilisateur introuvable — mais **400** sur POST /api/presences, où le contrat imposé n'autorise que 400, 409 et 410 |
         | EXERCICE_INCONNU         | 404 | Exercice introuvable |
         | RELECTURE_INCONNUE       | 404 | Relecture introuvable |
         | RESSOURCE_INCONNUE       | 404 | Adresse inexistante — le 404 imprévu sort au même format (ENF4) |
