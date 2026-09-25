@@ -69,6 +69,18 @@ d'une ligne `relecture` dont le `relecteur_id` pointe vers cet étudiant. Un mê
 - **Suppression ou modification d'une session après ouverture** (hors clôture).
 - **Soin apporté au CSS** : le rendu visuel n'est pas évalué, la mise en forme reste minimale et fonctionnelle.
 - **Statistiques historiques, export CSV/PDF, multi-promotion dans un même tableau.**
+- **Le comportement des deux relecteurs (EF13), livré en analyse seulement.**
+  Le cahier des charges, `api/contrat.yaml`, D2, D4 et la migration `V2` le
+  décrivent et le préparent entièrement ; **le tirage double, le calcul de la
+  moyenne de moyennes et l'écran étudiant correspondant ne sont pas
+  implémentés**. L'application continue d'assigner **un** relecteur.
+- **L'écran « ma note et mon commentaire » (EF9).** Il n'a pas été construit, et
+  il ne pouvait pas l'être utilement : son endpoint
+  `GET /api/etudiants/{id}/exercices` n'existe pas encore, et sans le tirage
+  double, `noteProvisoire` vaudrait toujours `false` et `commentaires`
+  n'aurait jamais plus d'un élément. L'écran aurait affiché une vérité
+  décorative — la forme du nouveau modèle sans sa substance. Mieux vaut un
+  périmètre réduit et annoncé qu'un écran qui ment.
 
 ### Ce qui est sorti du périmètre à l'étape 3, et pourquoi
 

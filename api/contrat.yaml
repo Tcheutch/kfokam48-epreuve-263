@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: KFOKAM48 — Présence & Relecture
-  version: "1.0"
+  version: "2.0"
   description: |
     Contrat d'API **figé avant le premier commit de code** (étape 1).
 

@@ -44,6 +44,7 @@ docs/
     D4_etats_transitions.md Cycle de vie d'un exercice (bonus)
 api/
   contrat.yaml              Contrat d'API figé — copie identique à la racine
+CHANGELOG.md                Ce qui a changé à chaque version, avec ses issues
 backend/                    Spring Boot, Java 17, Maven (étape 2)
 frontend/                   React + Vite (étape 2)
 ```
