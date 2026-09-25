@@ -255,16 +255,103 @@ complètement rapporte plus que coder à moitié. C'est écrit dans la PR #25, d
 
 ## Étape 4 — Version finale
 
-**Fait :**
+**Fait :** aucune fonctionnalité ajoutée — c'était la décision, et elle est
+écrite. L'étape a servi à **clore le périmètre et à rendre le dépôt lisible par
+quelqu'un qui n'a que le `README`**.
+
+`CHANGELOG.md` construit sur l'historique réel, chaque entrée renvoyant à son
+issue ou à sa PR. `info.version` du contrat passé à `2.0`. Section 3 du cahier
+des charges : le périmètre **exclu** dit désormais ce qui n'est pas livré
+d'EF13 et d'EF9, et pourquoi. Les cinq issues restantes — #8, #9, #10, #11,
+#23 — ont chacune un commentaire final disant ce qu'il faudrait exactement pour
+la fermer ; aucune n'est laissée sans explication. Puis `[JALON] v1.0`.
+
+**La décision de l'étape :** ne pas construire le frontend d'EF13. Sans le
+tirage double, `noteProvisoire` vaudrait toujours `false` et `commentaires`
+n'aurait jamais plus d'un élément — l'écran aurait montré la forme du nouveau
+modèle sans sa substance. J'ai préféré un périmètre réduit et annoncé à un
+écran qui ment. C'est écrit en section 3, dans le `CHANGELOG`, sur l'issue #23
+et dans `SOUMISSION.md`, plutôt que laissé à découvrir.
 
 **Bloqué :**
 
-**IA :**
+- **~15 min, et ce sont les mieux employées de l'étape : le `README` rejoué à
+  la lettre depuis un clone vierge, dans un dossier vide.** Deux inexactitudes
+  en sont sorties, aucune des deux n'aurait été trouvée en relisant.
+  - J'affirmais que « `docker compose down` suffit à tout effacer, aucun volume
+    n'est déclaré ». Faux en pratique : aucun volume n'est déclaré dans *mon*
+    fichier, mais l'image `postgres` en déclare un dans le sien. Chaque `down`
+    sans `-v` laisse un volume anonyme orphelin. Constaté en comptant : 3 avant,
+    4 après. La base repart bien vierge — vérifié en comparant l'heure
+    d'ouverture de `DEMO01` avant et après — donc l'erreur était invisible
+    fonctionnellement. C'est ce qui la rendait durable.
+  - Le nombre de tests annoncé était resté à 76 ; il est de 79 depuis l'étape 3.
+    Un chiffre faux dans un `README` décrédibilise tout ce qui l'entoure.
+
+  Le reste a tenu : une seule commande démarre les trois services, les deux
+  adresses annoncées répondent `200`, les trois séances de démonstration sont
+  dans leurs trois états, le tableau affiche ses six étudiants, et les onze
+  commandes de `docs/ERREURS.md` renvoient toutes le statut et le code promis.
+
+**IA :** je lui ai demandé le `CHANGELOG` à partir des tags, et les commentaires
+de clôture du backlog.
+
+Comment j'ai vérifié :
+
+1. **Le `CHANGELOG` contre `git log`, entrée par entrée.** C'est le document le
+   plus facile à inventer : une IA produit volontiers une liste plausible de
+   changements qui n'ont pas eu lieu. J'ai repris les numéros de commit et de
+   PR depuis l'historique réel (`git log --oneline v0.1..v0.2`), et vérifié que
+   chaque ligne correspond à un commit présent.
+2. **Le `README` en l'exécutant, pas en le lisant.** Voir ci-dessus. La règle
+   que je m'étais donnée : corriger le fichier, jamais ma mémoire.
+3. **`docs/ERREURS.md` contre la pile issue du clone**, pas contre mon dossier
+   de travail — les onze commandes rejouées, statut et code comparés.
+4. **Ce que j'ai refusé.** L'IA proposait de fermer #11, au motif que le
+   comportement est livré et testé. Il l'est, mais le **recalcul de la moyenne
+   après correction** n'a été constaté qu'à la main. Fermer sur une
+   vérification manuelle aurait contredit ce que le bug #22 venait de
+   m'apprendre : c'est le test rouge qui avait démenti un correctif que je
+   croyais bon. L'issue reste ouverte, avec la raison écrite.
 
 ---
 
 ## Étape 5 — Soumission
 
-**Fait :**
+**Fait :** `[JALON] v1.0` poussé et taggé, arbre propre, `README` retesté depuis
+un clone vierge. `SOUMISSION.md` rempli avec le hash complet relevé **après** le
+dernier push, et le lien du dépôt vérifié en navigation privée. Ce que j'ai
+livré y est décrit avec ce que je n'ai **pas** livré et pourquoi : le sujet dit
+qu'un correcteur préfère un périmètre réduit et annoncé à une promesse non
+tenue, et je l'ai pris au mot à chaque étape.
 
 **Ce que je referais autrement avec une journée de plus :**
+
+- **J'écrirais le test de concurrence dès l'étape 2, pas à l'étape 3.** Le bug
+  #22 n'a pas été introduit par l'enveloppe : il était là depuis que RG22
+  existait, et aucun de mes 76 tests ne pouvait le voir, parce qu'ils étaient
+  tous `@Transactional`. Une suite de tests entièrement transactionnelle est
+  aveugle à toute une famille de défauts — et c'est précisément la famille qui
+  ne se reproduit pas chez soi.
+
+- **Je nommerais toutes les contraintes dès `V1`.** Retirer
+  `UNIQUE (exercice_id)` a été pénible pour une seule raison : elle était
+  déclarée en ligne, donc anonyme, et chaque moteur l'a nommée à sa façon. Cinq
+  caractères de plus dans `V1` auraient évité une migration non portable, que
+  j'ai dû livrer vérifiée sur PostgreSQL et **non vérifiée sur H2**. C'est la
+  dette la plus concrète que je laisse.
+
+- **Je donnerais aux données de démonstration leur propre historique Flyway.**
+  Les numéroter `V900` a paru astucieux ; ça m'a coûté un `out-of-order` dès la
+  première migration de schéma qui a suivi. Deux instances Flyway, deux tables
+  d'historique, et le problème n'existe pas.
+
+- **Je séparerais le tirage du dépôt.** Assigner un relecteur dans la
+  transaction du dépôt est le même couplage que celui que j'ai corrigé côté
+  présence — je ne l'ai pas traité, faute de temps et parce qu'il ne s'était
+  pas manifesté. Il se manifestera.
+
+- **Ce que je ne changerais pas :** l'ordre. Analyse, puis code. À chaque étape
+  où j'ai été pressé, c'est le document écrit avant qui m'a évité d'inventer une
+  règle — et c'est le test écrit avant qui m'a évité de croire un correctif sur
+  parole.
