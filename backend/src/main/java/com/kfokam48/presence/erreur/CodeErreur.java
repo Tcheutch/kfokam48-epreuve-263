@@ -31,6 +31,9 @@ public enum CodeErreur {
     ETUDIANT_INCONNU(HttpStatus.NOT_FOUND, "Cet utilisateur est introuvable."),
     EXERCICE_INCONNU(HttpStatus.NOT_FOUND, "Cet exercice est introuvable."),
     RELECTURE_INCONNUE(HttpStatus.NOT_FOUND, "Cette relecture est introuvable."),
+    CONFLIT_CONCURRENT(
+            HttpStatus.CONFLICT,
+            "Une opération simultanée a modifié les mêmes données. Réessayez."),
     RESSOURCE_INCONNUE(HttpStatus.NOT_FOUND, "Cette adresse n'existe pas sur cette API."),
     ERREUR_INTERNE(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur interne est survenue.");
 
