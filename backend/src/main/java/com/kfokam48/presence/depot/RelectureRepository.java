@@ -13,6 +13,32 @@ public interface RelectureRepository extends JpaRepository<Relecture, Long> {
 
     Optional<Relecture> findByExerciceId(Long exerciceId);
 
+    /**
+     * RG11 — les relectures d'un étudiant, pour l'écran relecteur.
+     *
+     * <p>Le {@code join fetch} n'est pas une optimisation, c'est une
+     * <strong>correction</strong>. La conversion en DTO a lieu dans le
+     * contrôleur, donc <em>après</em> la fermeture de la session Hibernate
+     * ({@code open-in-view: false}). Sans ce chargement immédiat, la traversée
+     * {@code relecture -> exercice -> session} et {@code exercice -> etudiant}
+     * lève une {@code LazyInitializationException} que le filet de sécurité
+     * transforme en {@code 500} — l'écran relecteur devient inutilisable.
+     *
+     * <p>Corrigé ainsi plutôt qu'en activant {@code open-in-view}, qui aurait
+     * masqué le problème au lieu de le résoudre : garder la session ouverte
+     * pendant le rendu, c'est déplacer les requêtes hors de la couche qui les
+     * contrôle. Au passage, une seule requête remplace les quatre qu'aurait
+     * faites le chargement paresseux.
+     */
+    @Query("""
+            select r
+            from Relecture r
+              join fetch r.exercice e
+              join fetch e.session
+              join fetch e.etudiant
+            where r.relecteur.id = :relecteurId
+            order by r.assigneeAt desc
+            """)
     List<Relecture> findByRelecteurIdOrderByAssigneeAtDesc(Long relecteurId);
 
     /** RG11 — ce que compte {@code relecturesEnAttente} dans le tableau. */
