@@ -49,7 +49,7 @@ docs/
 api/
   contrat.yaml              Contrat d'API figé — copie identique à la racine
 CHANGELOG.md                Ce qui a changé à chaque version, avec ses issues
-backend/                    Spring Boot 3, Java 17, Maven — 79 tests
+backend/                    Spring Boot 3, Java 17, Maven — 81 tests
 frontend/                   React 18 + Vite + TypeScript — trois écrans
 ```
 
@@ -143,7 +143,7 @@ Maven est celle que le dépôt déclare.
 ### Tests
 
 ```bash
-cd backend && ./mvnw test      # 79 tests, aucune base de données requise
+cd backend && ./mvnw test      # 81 tests, aucune base de données requise
 cd frontend && npm run build   # TypeScript strict
 ```
 
