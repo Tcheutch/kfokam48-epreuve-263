@@ -17,6 +17,29 @@
 > identifiants fixes du jeu de démonstration
 > (`backend/src/main/resources/db/demo/`).
 
+> ### ⚠️ Le code `DEMO01` n'est valable que 15 minutes
+>
+> **RG2 s'applique au jeu de démonstration comme au reste** : la séance
+> `DEMO01` est ouverte au premier démarrage, et son code expire quinze minutes
+> plus tard. Passé ce délai, les commandes qui l'utilisent — dont **le cas
+> nominal** — renverront `410 CODE_EXPIRE`, ce qui est le comportement correct
+> et non un défaut.
+>
+> Deux façons de repartir :
+>
+> ```bash
+> # a. ouvrir une séance fraîche et utiliser le code renvoyé à la place de DEMO01
+> curl -s -X POST localhost:8080/api/sessions \
+>   -H 'Content-Type: application/json' \
+>   -d '{"titre":"Séance de démonstration","promotionId":1}'
+>
+> # b. ou tout remettre à zéro : la séance DEMO01 est recréée à l'instant présent
+> docker compose down -v && docker compose up --build
+> ```
+>
+> Les séances `DEMO02` (code expiré) et `DEMO03` (clôturée) ne sont, elles, pas
+> concernées : leur état est justement ce qu'on veut démontrer.
+
 Démarrer avant tout :
 
 ```bash
