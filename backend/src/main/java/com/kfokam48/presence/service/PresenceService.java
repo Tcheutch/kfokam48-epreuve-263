@@ -1,9 +1,11 @@
 package com.kfokam48.presence.service;
 
+import com.kfokam48.presence.depot.ExerciceRepository;
 import com.kfokam48.presence.depot.PresenceRepository;
 import com.kfokam48.presence.depot.SessionRepository;
 import com.kfokam48.presence.depot.UtilisateurRepository;
 import com.kfokam48.presence.domaine.Presence;
+import com.kfokam48.presence.domaine.StatutExercice;
 import com.kfokam48.presence.domaine.Session;
 import com.kfokam48.presence.domaine.SourcePresence;
 import com.kfokam48.presence.domaine.Utilisateur;
@@ -34,16 +36,22 @@ public class PresenceService {
     private final PresenceRepository presences;
     private final SessionRepository sessions;
     private final UtilisateurRepository utilisateurs;
+    private final ExerciceRepository exercices;
+    private final TirageRelecteur tirageRelecteur;
     private final Clock horloge;
 
     public PresenceService(
             PresenceRepository presences,
             SessionRepository sessions,
             UtilisateurRepository utilisateurs,
+            ExerciceRepository exercices,
+            TirageRelecteur tirageRelecteur,
             Clock horloge) {
         this.presences = presences;
         this.sessions = sessions;
         this.utilisateurs = utilisateurs;
+        this.exercices = exercices;
+        this.tirageRelecteur = tirageRelecteur;
         this.horloge = horloge;
     }
 
@@ -98,7 +106,18 @@ public class PresenceService {
             throw new ErreurMetier(CodeErreur.DEJA_PRESENT);
         }
 
-        return presences.save(new Presence(session, etudiant, source, maintenant));
+        Presence presence = presences.save(new Presence(session, etudiant, source, maintenant));
+
+        // RG22 — l'arrivée d'un présent peut débloquer les exercices déposés
+        // alors que personne d'autre n'était là. Le tirage est rejoué pour eux.
+        rejouerLesTiragesEnAttente(session.getId(), maintenant);
+        return presence;
+    }
+
+    /** RG22 (H3) — voir {@link TirageRelecteur}. */
+    private void rejouerLesTiragesEnAttente(Long sessionId, Instant maintenant) {
+        exercices.findBySessionIdAndStatut(sessionId, StatutExercice.DEPOSE)
+                .forEach(exercice -> tirageRelecteur.assigner(exercice, maintenant));
     }
 
     @Transactional(readOnly = true)

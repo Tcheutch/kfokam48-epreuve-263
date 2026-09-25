@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
+import com.kfokam48.presence.depot.ExerciceRepository;
 import com.kfokam48.presence.depot.PresenceRepository;
 import com.kfokam48.presence.depot.SessionRepository;
 import com.kfokam48.presence.depot.UtilisateurRepository;
@@ -47,6 +48,8 @@ class PresenceServiceTest {
     @Mock private PresenceRepository presences;
     @Mock private SessionRepository sessions;
     @Mock private UtilisateurRepository utilisateurs;
+    @Mock private ExerciceRepository exercices;
+    @Mock private TirageRelecteur tirageRelecteur;
 
     private Promotion promotion;
     private Utilisateur etudiant;
@@ -61,8 +64,15 @@ class PresenceServiceTest {
         when(sessions.findByCode("K7M2QX")).thenReturn(Optional.of(session));
         when(presences.existsBySessionIdAndEtudiantId(anyLong(), anyLong())).thenReturn(false);
         when(presences.save(any(Presence.class))).thenAnswer(i -> i.getArgument(0));
+        when(exercices.findBySessionIdAndStatut(anyLong(), any())).thenReturn(java.util.List.of());
 
-        return new PresenceService(presences, sessions, utilisateurs, Clock.fixed(maintenant, ZoneOffset.UTC));
+        return new PresenceService(
+                presences,
+                sessions,
+                utilisateurs,
+                exercices,
+                tirageRelecteur,
+                Clock.fixed(maintenant, ZoneOffset.UTC));
     }
 
     @Test
