@@ -1,0 +1,56 @@
+# Démarrage complet en une commande : docker compose up
+#
+# Les données de démonstration sont chargées au démarrage par Flyway
+# (backend/src/main/resources/db/demo), donc l'application n'est jamais vide
+# au premier écran (ENF6).
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kfokam48
+      POSTGRES_USER: kfokam48
+      POSTGRES_PASSWORD: kfokam48
+    # Pas de volume nommé : « docker compose down » doit rendre une base
+    # vierge, pour que le prochain démarrage rejoue toutes les migrations
+    # depuis zéro (ENF5).
+    # Publié sur 5433 et non 5432, pour le chemin « développement sans Docker »
+    # du README : un poste a souvent déjà un PostgreSQL sur 5432, et la
+    # collision donne un « password authentication failed » très trompeur —
+    # on croit parler au conteneur, on parle à la base locale. Dans la pile
+    # compose, le backend passe par le réseau interne (db:5432), pas par là.
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kfokam48 -d kfokam48"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/kfokam48
+      SPRING_DATASOURCE_USERNAME: kfokam48
+      SPRING_DATASOURCE_PASSWORD: kfokam48
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    # curl n'est pas dans l'image JRE : on teste le port avec bash, qui y est.
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "5173:80"
