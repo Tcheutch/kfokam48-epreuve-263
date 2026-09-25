@@ -35,7 +35,7 @@ export function TableauPromotion({ promotionId }: { promotionId: number }) {
   return (
     <div className="tableau-enveloppe">
       <table className="tableau">
-        <caption className="etat-detail">
+        <caption>
           Une ligne par étudiant de la promotion, y compris ceux qui n'ont encore rien fait.
         </caption>
         <thead>

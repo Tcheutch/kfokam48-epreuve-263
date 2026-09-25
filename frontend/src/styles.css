@@ -435,6 +435,16 @@ button:disabled {
   display: block;
 }
 
+/* La légende du tableau est une phrase, pas une cellule : elle se place
+   au-dessus et occupe toute la largeur, aux deux mises en page. */
+.tableau caption {
+  caption-side: top;
+  text-align: left;
+  padding: 0 0 var(--pas-3);
+  font-size: var(--taille-s);
+  color: var(--texte-doux);
+}
+
 .tableau thead {
   /* Masqué visuellement, toujours lu par les lecteurs d'écran. */
   position: absolute;
@@ -466,11 +476,21 @@ button:disabled {
 
 .tableau td {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--pas-3);
+  gap: var(--pas-2) var(--pas-3);
   padding: var(--pas-1) 0;
   border: 0;
+}
+
+/* Le texte explicatif de l'état prend sa propre ligne dans la carte : serré
+   contre la pastille sur 360 px, il devenait illisible — or c'est lui qui
+   porte la distinction de H1, pas la couleur. */
+.tableau td .etat-detail {
+  flex-basis: 100%;
+  margin-top: 0;
+  text-align: right;
 }
 
 .tableau td::before {
@@ -600,6 +620,10 @@ button:disabled {
 
   .tableau tbody tr {
     border-bottom: 1px solid var(--bordure);
+  }
+
+  .tableau caption {
+    padding: var(--pas-3) 0;
   }
 
   .tableau th,
