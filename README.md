@@ -105,11 +105,18 @@ chaque code d'erreur du contrat est reproductible immédiatement : voir
 Pour repartir d'une base entièrement vierge :
 
 ```bash
-docker compose down && docker compose up --build
+docker compose down -v && docker compose up --build
 ```
 
-Aucun volume n'est déclaré, donc `down` suffit à tout effacer et les migrations
-sont rejouées depuis zéro (ENF5).
+Le `-v` n'est pas décoratif. Aucun volume n'est déclaré dans
+`docker-compose.yml`, mais l'image `postgres` en déclare un dans son propre
+Dockerfile : chaque `docker compose down` **sans** `-v` laisse derrière lui un
+volume anonyme orphelin. La base repart bien vierge dans les deux cas — un
+nouveau conteneur reçoit un nouveau volume — mais sans `-v` les anciens
+s'accumulent sur le disque. Vérifié en comptant les volumes avant et après.
+
+Les migrations sont rejouées depuis zéro (ENF5) : `V1`, `V2`, puis les données
+de démonstration `V900` et `V901`.
 
 ### Développement, sans Docker
 
@@ -132,7 +139,7 @@ Maven est celle que le dépôt déclare.
 ### Tests
 
 ```bash
-cd backend && ./mvnw test      # 76 tests, aucune base de données requise
+cd backend && ./mvnw test      # 79 tests, aucune base de données requise
 cd frontend && npm run build   # TypeScript strict
 ```
 
