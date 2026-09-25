@@ -69,28 +69,26 @@ export function EcranEtudiant() {
 
       <SelecteurEtudiant etudiantId={etudiantId} onChange={setEtudiantId} />
 
-      <form onSubmit={marquer}>
-        <p>
+      <form className="carte" onSubmit={marquer}>
+        <div className="champ">
           <label htmlFor="code">Code de présence</label>
-          <br />
           <input
             id="code"
+            className="champ-code"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             maxLength={6}
             placeholder="K7M2QX"
             autoCapitalize="characters"
-            style={{
-              fontFamily: 'monospace',
-              fontSize: '1.5rem',
-              letterSpacing: '0.2rem',
-              width: '100%',
-              boxSizing: 'border-box',
-            }}
+            inputMode="text"
           />
-        </p>
+        </div>
 
-        <button type="submit" disabled={marquageEnCours || etudiantId === '' || code.trim().length === 0}>
+        <button
+          className="bouton-principal"
+          type="submit"
+          disabled={marquageEnCours || etudiantId === '' || code.trim().length === 0}
+        >
           {marquageEnCours ? 'Envoi…' : 'Je suis présent'}
         </button>
       </form>
@@ -101,7 +99,7 @@ export function EcranEtudiant() {
 
       {presence && (
         <>
-          <p role="status">
+          <p className="etat-succes" role="status">
             <strong>Présence enregistrée.</strong>
             {presence.source === 'FORMATEUR' ? ' (ajoutée par le formateur)' : ''}
           </p>
@@ -114,20 +112,23 @@ export function EcranEtudiant() {
             </small>
           </p>
 
-          <form onSubmit={exercice ? remplacer : deposer}>
-            <p>
+          <form className="carte" onSubmit={exercice ? remplacer : deposer}>
+            <div className="champ">
               <label htmlFor="lien">Lien de mon travail</label>
-              <br />
               <input
                 id="lien"
+                type="url"
                 value={lien}
                 onChange={(e) => setLien(e.target.value)}
                 placeholder="https://github.com/mon-compte/tp4"
-                style={{ width: '100%', boxSizing: 'border-box' }}
               />
-            </p>
+            </div>
 
-            <button type="submit" disabled={depotEnCours || lien.trim().length === 0}>
+            <button
+              className="bouton-principal"
+              type="submit"
+              disabled={depotEnCours || lien.trim().length === 0}
+            >
               {depotEnCours ? 'Envoi…' : exercice ? 'Remplacer le lien' : 'Déposer'}
             </button>
           </form>
@@ -135,7 +136,7 @@ export function EcranEtudiant() {
           {erreurDepot && <Erreur message={erreurDepot.message} code={erreurDepot.code} />}
 
           {exercice && (
-            <p role="status">
+            <p className="etat-succes" role="status">
               Exercice enregistré — statut <strong>{exercice.statut}</strong>.
             </p>
           )}

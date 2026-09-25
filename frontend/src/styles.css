@@ -1,0 +1,695 @@
+/* ===========================================================================
+   KFOKAM48 — Présence & Relecture
+   Feuille de style unique, importée une seule fois dans main.tsx.
+
+   MOBILE FIRST, sans exception : les styles de base visent un écran de 360 px,
+   et tout élargissement passe par un `@media (min-width: …)`. Jamais l'inverse.
+
+   Aucune valeur littérale hors de ce bloc `:root` — couleurs, espacements,
+   rayons et typographie sont des variables, pour qu'un changement se fasse à
+   un seul endroit.
+
+   Le rendu visuel n'est pas évalué au barème de l'épreuve. Ce fichier est donc
+   strictement ADDITIF : il n'introduit aucune règle de gestion, aucun calcul,
+   aucun texte fonctionnel. Les libellés d'état restent ceux du code, parce
+   qu'ils portent la distinction de l'hypothèse H1 — expiration du code, séance
+   expirée, clôture — et qu'une reformulation « plus jolie » la détruirait.
+   =========================================================================== */
+
+:root {
+  /* — Couleurs. Chaque paire texte/fond est vérifiée en contraste WCAG AA. — */
+  --fond: #f5f7f9;
+  --surface: #ffffff;
+  --surface-douce: #eef1f4;
+
+  --texte: #1b1f23;          /* 15.8:1 sur --surface */
+  --texte-doux: #566270;     /*  6.3:1 sur --surface */
+  --texte-attenue: #6b7480;  /*  4.8:1 sur --surface — « rien pour l'instant » */
+
+  --bordure: #dbe0e6;
+  --bordure-forte: #b9c1cb;
+
+  --primaire: #1f5f8b;       /*  6.4:1 avec du blanc  */
+  --primaire-sombre: #174a6d;
+  --primaire-doux: #e8f0f6;
+
+  /* Les trois états d'une séance (H1). Trois couleurs, trois sens distincts. */
+  --ouverte-fond: #e1f3e8;
+  --ouverte-texte: #14603a;  /*  7.3:1 sur son fond   */
+  --expiree-fond: #fdf0da;
+  --expiree-texte: #7a4a05;  /*  7.1:1 sur son fond   */
+  --cloturee-fond: #e9edf1;
+  --cloturee-texte: #464f5a; /*  8.1:1 sur son fond   */
+
+  /* L'irréversible (RG20) et l'erreur : lisibles, jamais criards. */
+  --danger: #9d2b30;         /*  7.1:1 sur --surface  */
+  --danger-fond: #fceceb;
+  --danger-bordure: #e4b4b2;
+
+  /* — Espacements — */
+  --pas-1: 0.25rem;
+  --pas-2: 0.5rem;
+  --pas-3: 0.75rem;
+  --pas-4: 1rem;
+  --pas-5: 1.5rem;
+  --pas-6: 2rem;
+
+  /* — Rayons — */
+  --rayon-s: 6px;
+  --rayon-m: 10px;
+  --rayon-l: 14px;
+  --rayon-pastille: 999px;
+
+  /* — Typographie — */
+  --police: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --police-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  --taille-xs: 0.75rem;
+  --taille-s: 0.875rem;
+  --taille-m: 1rem;
+  --taille-l: 1.25rem;
+  --taille-xl: 1.5rem;
+  --taille-code: 2.25rem;
+
+  /* — Divers — */
+  --ombre: 0 1px 2px rgba(27, 31, 35, 0.06), 0 2px 8px rgba(27, 31, 35, 0.05);
+  --cible-tactile: 44px; /* plancher d'accessibilité, jamais en dessous */
+  --largeur-max: 60rem;
+}
+
+/* ------------------------------------------------------------------ base -- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Empêche l'agrandissement automatique du texte en rotation sur iOS. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--police);
+  font-size: var(--taille-m);
+  line-height: 1.55;
+  color: var(--texte);
+  background: var(--fond);
+  /* Aucun défilement horizontal de page, à aucune largeur. */
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: var(--largeur-max);
+  margin: 0 auto;
+  /* Gouttière de 16 px sur téléphone, respirations plus larges ensuite. */
+  padding: var(--pas-4) var(--pas-4) var(--pas-6);
+}
+
+h1 {
+  font-size: var(--taille-l);
+  line-height: 1.25;
+  margin: 0 0 var(--pas-4);
+}
+
+h2 {
+  font-size: var(--taille-m);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texte-doux);
+  margin: var(--pas-6) 0 var(--pas-3);
+}
+
+h3 {
+  font-size: var(--taille-m);
+  margin: 0 0 var(--pas-2);
+}
+
+p {
+  margin: 0 0 var(--pas-3);
+}
+
+small {
+  font-size: var(--taille-s);
+  color: var(--texte-doux);
+}
+
+a {
+  color: var(--primaire);
+  overflow-wrap: anywhere; /* une URL de dépôt ne doit pas élargir la page */
+}
+
+/* Un anneau de focus VISIBLE partout, sans exception : c'est la seule chose
+   qui rend l'application utilisable sans souris. */
+:focus-visible {
+  outline: 3px solid var(--primaire);
+  outline-offset: 2px;
+  border-radius: var(--rayon-s);
+}
+
+/* ---------------------------------------------------------------- onglets -- */
+
+.onglets {
+  display: flex;
+  gap: var(--pas-1);
+  background: var(--surface-douce);
+  padding: var(--pas-1);
+  border-radius: var(--rayon-m);
+  margin-bottom: var(--pas-5);
+}
+
+.onglet {
+  flex: 1;
+  min-height: var(--cible-tactile);
+  padding: var(--pas-2) var(--pas-2);
+  border: 0;
+  border-radius: var(--rayon-s);
+  background: transparent;
+  color: var(--texte-doux);
+  font: inherit;
+  font-size: var(--taille-s);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onglet:hover:not([aria-selected='true']) {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--texte);
+}
+
+/* L'actif doit se voir sans ambiguïté : fond plein, contraste inversé. */
+.onglet[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--primaire);
+  box-shadow: var(--ombre);
+  cursor: default;
+}
+
+/* --------------------------------------------------------------- panneaux -- */
+
+.carte {
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-l);
+  padding: var(--pas-4);
+  box-shadow: var(--ombre);
+  margin-bottom: var(--pas-4);
+}
+
+fieldset.carte {
+  margin-inline: 0;
+}
+
+legend {
+  font-weight: 600;
+  padding-inline: var(--pas-2);
+}
+
+/* ------------------------------------------------------------ formulaires -- */
+
+label {
+  display: block;
+  font-size: var(--taille-s);
+  font-weight: 600;
+  color: var(--texte-doux);
+  margin-bottom: var(--pas-1);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: var(--cible-tactile);
+  padding: var(--pas-2) var(--pas-3);
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-s);
+  background: var(--surface);
+  color: var(--texte);
+  font: inherit;
+}
+
+textarea {
+  min-height: calc(var(--cible-tactile) * 2);
+  resize: vertical;
+}
+
+.champ {
+  margin-bottom: var(--pas-3);
+}
+
+/* La saisie du code de présence : lue à voix haute, tapée sur un téléphone. */
+.champ-code {
+  font-family: var(--police-mono);
+  font-size: var(--taille-l);
+  letter-spacing: 0.25em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ----------------------------------------------------------------- boutons -- */
+
+button {
+  min-height: var(--cible-tactile);
+  padding: var(--pas-2) var(--pas-4);
+  border: 1px solid transparent;
+  border-radius: var(--rayon-s);
+  background: var(--primaire);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--primaire-sombre);
+}
+
+button:disabled {
+  background: var(--surface-douce);
+  color: var(--texte-attenue);
+  border-color: var(--bordure);
+  cursor: not-allowed;
+}
+
+.bouton-principal {
+  width: 100%;
+}
+
+.bouton-discret {
+  background: var(--surface);
+  color: var(--primaire);
+  border-color: var(--bordure-forte);
+}
+
+.bouton-discret:hover:not(:disabled) {
+  background: var(--primaire-doux);
+}
+
+/* « Clôturer » est IRRÉVERSIBLE (RG20). Le bouton doit le dire avant le clic,
+   pas seulement la boîte de confirmation qui suit. */
+.bouton-irreversible {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: var(--danger-bordure);
+  font-size: var(--taille-s);
+  padding-inline: var(--pas-3);
+}
+
+.bouton-irreversible:hover:not(:disabled) {
+  background: var(--danger-fond);
+  border-color: var(--danger);
+}
+
+/* --------------------------------------------------- code de présence (1) -- */
+
+/* C'est l'information la plus importante de l'écran formateur : elle est lue à
+   voix haute dans une salle, parfois depuis le fond. Elle ne peut pas être une
+   cellule de tableau parmi d'autres. */
+.bloc-code {
+  background: var(--primaire-doux);
+  border: 1px solid var(--primaire);
+  border-radius: var(--rayon-l);
+  padding: var(--pas-4);
+  text-align: center;
+}
+
+.bloc-code__intitule {
+  font-size: var(--taille-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primaire);
+  margin-bottom: var(--pas-2);
+}
+
+.bloc-code__valeur {
+  font-family: var(--police-mono);
+  font-size: var(--taille-code);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.15em;
+  color: var(--texte);
+  margin: 0 0 var(--pas-3);
+  overflow-wrap: anywhere;
+}
+
+.bloc-code__validite {
+  font-size: var(--taille-s);
+  color: var(--texte-doux);
+  margin-bottom: var(--pas-3);
+}
+
+/* ------------------------------------------------------- pastilles (2) ---- */
+
+.pastille {
+  display: inline-block;
+  padding: var(--pas-1) var(--pas-3);
+  border-radius: var(--rayon-pastille);
+  font-size: var(--taille-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pastille--ouverte {
+  background: var(--ouverte-fond);
+  color: var(--ouverte-texte);
+}
+
+.pastille--expiree {
+  background: var(--expiree-fond);
+  color: var(--expiree-texte);
+}
+
+.pastille--cloturee {
+  background: var(--cloturee-fond);
+  color: var(--cloturee-texte);
+}
+
+/* Le texte explicatif reste à côté de la pastille : c'est lui qui porte la
+   distinction de H1, la couleur ne fait que la rendre repérable. */
+.etat-detail {
+  display: block;
+  font-size: var(--taille-xs);
+  color: var(--texte-doux);
+  margin-top: var(--pas-1);
+}
+
+/* ------------------------------------------------- chargement et erreur (6) */
+
+.etat-bloc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pas-2);
+  padding: var(--pas-5) var(--pas-4);
+  border-radius: var(--rayon-m);
+  text-align: center;
+}
+
+.etat-bloc--chargement {
+  background: var(--surface-douce);
+  color: var(--texte-doux);
+}
+
+/* Une erreur doit se lire, pas agresser : fond doux, bordure marquée. */
+.etat-bloc--erreur {
+  background: var(--danger-fond);
+  border: 1px solid var(--danger-bordure);
+  color: var(--danger);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.etat-bloc__message {
+  font-weight: 600;
+}
+
+.etat-bloc__code {
+  font-family: var(--police-mono);
+  font-size: var(--taille-xs);
+  opacity: 0.85;
+}
+
+.etat-succes {
+  display: block;
+  padding: var(--pas-3);
+  border-radius: var(--rayon-m);
+  background: var(--ouverte-fond);
+  color: var(--ouverte-texte);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------- tableaux — MOBILE --- */
+
+/* Cinq colonnes ne tiennent pas sur 360 px. En dessous de 640 px, chaque ligne
+   devient une CARTE : le nom en titre, les mesures en paires libellé/valeur.
+   La sémantique <table> est conservée intégralement — les libellés viennent de
+   `data-label`, pas d'un balisage dupliqué. */
+
+.tableau {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+}
+
+/* La légende du tableau est une phrase, pas une cellule : elle se place
+   au-dessus et occupe toute la largeur, aux deux mises en page. */
+.tableau caption {
+  caption-side: top;
+  text-align: left;
+  padding: 0 0 var(--pas-3);
+  font-size: var(--taille-s);
+  color: var(--texte-doux);
+}
+
+.tableau thead {
+  /* Masqué visuellement, toujours lu par les lecteurs d'écran. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tableau tbody,
+.tableau tr,
+.tableau td {
+  display: block;
+  width: 100%;
+}
+
+.tableau tr {
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-m);
+  padding: var(--pas-3);
+  margin-bottom: var(--pas-3);
+  box-shadow: var(--ombre);
+}
+
+.tableau td {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--pas-2) var(--pas-3);
+  padding: var(--pas-1) 0;
+  border: 0;
+}
+
+/* Le texte explicatif de l'état prend sa propre ligne dans la carte : serré
+   contre la pastille sur 360 px, il devenait illisible — or c'est lui qui
+   porte la distinction de H1, pas la couleur. */
+.tableau td .etat-detail {
+  flex-basis: 100%;
+  margin-top: 0;
+  text-align: right;
+}
+
+.tableau td::before {
+  content: attr(data-label);
+  font-size: var(--taille-s);
+  font-weight: 600;
+  color: var(--texte-doux);
+}
+
+/* La cellule titre de la carte : le nom, en tête, sans libellé répété. */
+.tableau td[data-role='titre'] {
+  display: block;
+  font-size: var(--taille-m);
+  font-weight: 700;
+  padding-bottom: var(--pas-2);
+  margin-bottom: var(--pas-2);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.tableau td[data-role='titre']::before {
+  content: none;
+}
+
+.tableau td[data-role='action'] {
+  justify-content: flex-start;
+  padding-top: var(--pas-3);
+}
+
+.tableau td[data-role='action']::before {
+  content: none;
+}
+
+/* (4) Un zéro ou un tiret ne sont pas des erreurs : ils disent « rien pour
+   l'instant ». Ils s'atténuent, ils ne s'effacent pas — le contraste reste
+   au-dessus du seuil AA. */
+.valeur-vide {
+  color: var(--texte-attenue);
+  font-variant-numeric: tabular-nums;
+}
+
+.valeur {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.valeur--attention {
+  color: var(--expiree-texte);
+  background: var(--expiree-fond);
+  padding: 0 var(--pas-2);
+  border-radius: var(--rayon-pastille);
+}
+
+.code-seance {
+  font-family: var(--police-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------- relecture -- */
+
+.relecture {
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon-l);
+  padding: var(--pas-4);
+  margin-bottom: var(--pas-4);
+  box-shadow: var(--ombre);
+}
+
+.relecture__lien {
+  display: block;
+  font-size: var(--taille-s);
+  margin-bottom: var(--pas-3);
+}
+
+.vide {
+  padding: var(--pas-5);
+  text-align: center;
+  color: var(--texte-doux);
+  background: var(--surface-douce);
+  border-radius: var(--rayon-m);
+}
+
+/* ======================================================= ≥ 640 px : tableau */
+
+@media (min-width: 640px) {
+  .page {
+    padding: var(--pas-5) var(--pas-5) var(--pas-6);
+  }
+
+  h1 {
+    font-size: var(--taille-xl);
+  }
+
+  .bouton-principal {
+    width: auto;
+    min-width: 12rem;
+  }
+
+  /* Le tableau redevient un tableau : la place est là, autant s'en servir. */
+  .tableau {
+    display: table;
+  }
+
+  .tableau thead {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+  }
+
+  .tableau tbody {
+    display: table-row-group;
+  }
+
+  .tableau tr {
+    display: table-row;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  .tableau tbody tr {
+    border-bottom: 1px solid var(--bordure);
+  }
+
+  .tableau caption {
+    padding: var(--pas-3) 0;
+  }
+
+  .tableau th,
+  .tableau td {
+    display: table-cell;
+    width: auto;
+    padding: var(--pas-3);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .tableau td::before {
+    content: none;
+  }
+
+  .tableau th {
+    font-size: var(--taille-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--texte-doux);
+    border-bottom: 2px solid var(--bordure-forte);
+  }
+
+  .tableau td[data-role='titre'] {
+    font-weight: 600;
+    font-size: var(--taille-m);
+    border-bottom: 1px solid var(--bordure);
+    margin: 0;
+  }
+
+  .tableau .numerique {
+    text-align: right;
+  }
+
+  .tableau-enveloppe {
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon-l);
+    padding: var(--pas-2) var(--pas-4);
+    box-shadow: var(--ombre);
+  }
+
+  .bloc-code__valeur {
+    font-size: calc(var(--taille-code) * 1.3);
+  }
+}
+
+/* ======================================================== ≥ 1024 px : large */
+
+@media (min-width: 1024px) {
+  .page {
+    padding-inline: var(--pas-6);
+  }
+
+  .onglets {
+    max-width: 30rem;
+  }
+}
+
+/* ============================================= préférences de l'utilisateur */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

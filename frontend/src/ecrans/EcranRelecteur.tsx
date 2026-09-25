@@ -34,7 +34,9 @@ export function EcranRelecteur() {
       {erreur && <Erreur message={erreur.message} code={erreur.code} />}
       {etudiantId !== '' && relectures === null && !erreur && <Chargement quoi="des relectures" />}
 
-      {relectures?.length === 0 && <p>Aucune relecture ne t'est assignée pour le moment.</p>}
+      {relectures?.length === 0 && (
+        <p className="vide">Aucune relecture ne t'est assignée pour le moment.</p>
+      )}
 
       {relectures?.map((relecture) => (
         <FormulaireRelecture
@@ -80,16 +82,14 @@ function FormulaireRelecture({
   }
 
   return (
-    <article style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
+    <article className="relecture">
       <h3>
         {relecture.sessionTitre} — travail de {relecture.auteurNom}
       </h3>
 
-      <p>
-        <a href={relecture.lien} target="_blank" rel="noreferrer">
-          {relecture.lien}
-        </a>
-      </p>
+      <a className="relecture__lien" href={relecture.lien} target="_blank" rel="noreferrer">
+        {relecture.lien}
+      </a>
 
       {!relecture.modifiable ? (
         <p>
@@ -97,28 +97,25 @@ function FormulaireRelecture({
         </p>
       ) : (
         <form onSubmit={envoyer}>
-          <p>
+          <div className="champ">
             <label htmlFor={`note-${relecture.id}`}>Note sur 20</label>
-            <br />
             <input
               id={`note-${relecture.id}`}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               inputMode="numeric"
             />
-          </p>
-          <p>
+          </div>
+          <div className="champ">
             <label htmlFor={`commentaire-${relecture.id}`}>Commentaire</label>
-            <br />
             <textarea
               id={`commentaire-${relecture.id}`}
               value={commentaire}
               onChange={(e) => setCommentaire(e.target.value)}
               rows={3}
-              style={{ width: '100%', boxSizing: 'border-box' }}
             />
-          </p>
-          <button type="submit" disabled={envoiEnCours || note.trim().length === 0}>
+          </div>
+          <button className="bouton-principal" type="submit" disabled={envoiEnCours || note.trim().length === 0}>
             {envoiEnCours ? 'Envoi…' : relecture.statut === 'RENDUE' ? 'Corriger ma note' : 'Rendre ma relecture'}
           </button>
           {relecture.statut === 'RENDUE' && (
